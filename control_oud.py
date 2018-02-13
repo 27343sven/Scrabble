@@ -1,6 +1,6 @@
 import wx
 from Screens.SchermSpelbord_oud import Schermpje as mainScherm
-from Screens.PopupLetterScanner import Picker
+from Screens.PopupLetterScanner_oud import Picker
 
 
 class Schermpje2(wx.Frame):

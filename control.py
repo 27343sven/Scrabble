@@ -1,3 +1,4 @@
+# screens
 from Screens.SchermMenu import Schermpje as menuScherm
 from Screens.SchermSettings import Schermpje as settingScherm
 from Screens.SchermScorebord import Schermpje as highscoreScherm
@@ -8,8 +9,10 @@ from Screens.SchermSpelbord import Schermpje as speelScherm
 from Screens.SchermResultaat import Schermpje as resultaatScherm
 
 # popups
-from Screens.LetterInwisselScanner import Picker as letterInwisselPopup
-from Screens.PopupLetterScanner import Picker as letterSelectiePopup
+from Screens.PopupLetterScanner import Picker
+
+# classes
+from Screens.ScrabbleGame import ScrableGame
 
 import wx
 
@@ -18,6 +21,7 @@ class Schermpje2(wx.Frame):
         wx.Frame.__init__(self, parent, id, title, size=(1200, 600))
         self.schermen = {}
         self.initialiseerSchermen()
+        self.game = ScrableGame()
         self.bindAll()
         self.setScherm('menu')
 
@@ -47,12 +51,53 @@ class Schermpje2(wx.Frame):
         self.Show(True)
 
     def bindAll(self):
+        """
+        roept alle bind methoden aan voor elk scherm
+        :return:
+        """
+
         self.bindMenu()
         self.bindHighscores()
         self.bindPreGame()
         self.bindSettings()
         self.bindToevoeg()
         self.bindVerwijder()
+        self.bindSpeelScherm()
+        self.bindPreGameOptions()
+
+    def bindSpeelScherm(self):
+        for row in self.schermen['speelbord'][0].button_grid:
+            for button in row:
+                button.Bind(wx.EVT_BUTTON, self.onScrabbleButton)
+
+    def onScrabbleButton(self, event):
+        current_object = event.GetEventObject()
+        if not current_object.getTileStatus():
+            test = Picker(self.game.getPlayerLetters(), clear=current_object.getLetter() != "")
+            test.ShowModal()
+            out = test.choice
+            test.Destroy()
+            if out not in [" ", ""]:
+                if current_object.getLetter() != "":
+                    self.clearLetter(current_object.getLetter())
+                event.GetEventObject().setLetter(out)
+                self.playLetter(out)
+            elif out == " ":
+                letter = current_object.resetButton()
+                self.clearLetter(letter)
+
+    def playLetter(self, letter):
+        self.game.playLetter(letter)
+        self.schermen['speelbord'][0].hand.removeLetter(letter)
+        self.schermen['speelbord'][0].hand.Layout()
+
+    def clearLetter(self, letter):
+        self.game.clearLetter(letter)
+        self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
+        self.schermen['speelbord'][0].hand.Layout()
+
+    def bindPreGameOptions(self):
+        self.schermen['spelSettings'][0].spelenButton.Bind(wx.EVT_BUTTON, self.onPreGameOptionsSpelenButton)
 
     def bindMenu(self):
         scherm = self.schermen['menu'][0]
@@ -82,6 +127,16 @@ class Schermpje2(wx.Frame):
         scherm = self.schermen['woordenVerwijder'][0]
         for button in scherm.buttons:
             button.Bind(wx.EVT_BUTTON, self.onVerwijderButton)
+
+    def onPreGameOptionsSpelenButton(self, event):
+        scherm = self.schermen['spelSettings'][0]
+        namen = []
+        for x in range(int(scherm.playerOption.GetStringSelection())):
+            namen.append(scherm.textCtrlDict['textCtrl{}'.format(x + 1)].GetValue())
+        self.game.setPlayers(namen)
+        self.schermen['speelbord'][0].speler.SetLabel(self.game.getCurrentPlayer())
+        self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
+        self.setScherm('speelbord')
 
     def onMenuButton(self, event):
         object = event.GetEventObject()

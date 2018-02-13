@@ -82,7 +82,7 @@ class Schermpje(wx.Panel):
         self.set_tiles(main_list)
         self.hand = Hand(self)
         main_boxje.Add(wx.Panel(self, -1), 1)
-        main_boxje.Add(self.hand, 1, wx.CENTER)
+        main_boxje.Add(self.hand, 0, wx.CENTER)
         return (main_list, main_boxje)
 
     def set_tiles(self, board):
