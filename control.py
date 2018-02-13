@@ -1,15 +1,15 @@
-from SchermMenu import Schermpje as menuScherm
-from SchermSettings import Schermpje as settingScherm
-from SchermScorebord import Schermpje as highscoreScherm
-from SchermWoordenToevoegen import Schermpje as woordenToevoegScherm
-from SchermWoordenVerwijderen import Schermpje as woordenVerwijderScherm
-from SchermPreGameOptions import Schermpje as spelSettingScherm
-from SchermSpelbord import Schermpje as speelScherm
-from SchermResultaat import Schermpje as resultaatScherm
+from Screens.SchermMenu import Schermpje as menuScherm
+from Screens.SchermSettings import Schermpje as settingScherm
+from Screens.SchermScorebord import Schermpje as highscoreScherm
+from Screens.SchermWoordenToevoegen import Schermpje as woordenToevoegScherm
+from Screens.SchermWoordenVerwijderen import Schermpje as woordenVerwijderScherm
+from Screens.SchermPreGameOptions import Schermpje as spelSettingScherm
+from Screens.SchermSpelbord import Schermpje as speelScherm
+from Screens.SchermResultaat import Schermpje as resultaatScherm
 
 # popups
-from LetterInwisselScanner import Picker as letterInwisselPopup
-from PopupLetterScanner import Picker as letterSelectiePopup
+from Screens.LetterInwisselScanner import Picker as letterInwisselPopup
+from Screens.PopupLetterScanner import Picker as letterSelectiePopup
 
 import wx
 
