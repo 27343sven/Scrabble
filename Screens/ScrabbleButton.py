@@ -2,9 +2,9 @@ import wx
 import string
 
 class GameButton(wx.Button):
-    def __init__(self, parent, id, location):
-        wx.Button.__init__(self, parent, id, size=(60, 60))
-        self.SetMaxSize((60, 60))
+    def __init__(self, parent, id, location, size=(50, 50)):
+        wx.Button.__init__(self, parent, id, size=size)
+        self.SetMaxSize(size)
         self.letter = ""
         self.tile_used = False
         self.woordMultiplier = 1

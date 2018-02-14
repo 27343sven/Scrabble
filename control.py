@@ -69,6 +69,7 @@ class Schermpje2(wx.Frame):
         for row in self.schermen['speelbord'][0].button_grid:
             for button in row:
                 button.Bind(wx.EVT_BUTTON, self.onScrabbleButton)
+        self.schermen['speelbord'][0].clearButton.Bind(wx.EVT_BUTTON, self.onClearButton)
 
     def onScrabbleButton(self, event):
         current_object = event.GetEventObject()
@@ -98,6 +99,7 @@ class Schermpje2(wx.Frame):
 
     def bindPreGameOptions(self):
         self.schermen['spelSettings'][0].spelenButton.Bind(wx.EVT_BUTTON, self.onPreGameOptionsSpelenButton)
+        self.schermen['spelSettings'][0].backButton.Bind(wx.EVT_BUTTON, self.onPreGameOptionsTerugButton)
 
     def bindMenu(self):
         scherm = self.schermen['menu'][0]
@@ -128,6 +130,14 @@ class Schermpje2(wx.Frame):
         for button in scherm.buttons:
             button.Bind(wx.EVT_BUTTON, self.onVerwijderButton)
 
+    def onClearButton(self, event):
+        for row in self.schermen['speelbord'][0].button_grid:
+            for button in row:
+                if button.getLetter() != "" and not button.getTileStatus():
+                    letter = button.resetButton()
+                    self.clearLetter(letter)
+
+
     def onPreGameOptionsSpelenButton(self, event):
         scherm = self.schermen['spelSettings'][0]
         namen = []
@@ -137,6 +147,14 @@ class Schermpje2(wx.Frame):
         self.schermen['speelbord'][0].speler.SetLabel(self.game.getCurrentPlayer())
         self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
         self.setScherm('speelbord')
+
+    def onPreGameOptionsTerugButton(self, event):
+        scherm = self.schermen['spelSettings'][0]
+        for x in range(int(scherm.playerOption.GetStringSelection())):
+            scherm.textCtrlDict['textCtrl{}'.format(x + 1)].Clear()
+        scherm.playerOption.SetSelection(0)
+        scherm.onRadioBox(None)
+        self.setScherm('menu')
 
     def onMenuButton(self, event):
         object = event.GetEventObject()
@@ -188,6 +206,6 @@ class Schermpje2(wx.Frame):
 
 if __name__ == "__main__":
     app = wx.App()
-    Schermpje2(None, -1, "button")
+    Schermpje2(None, -1, "Scrabble!")
     app.MainLoop()
 
