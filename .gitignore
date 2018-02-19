@@ -1,4 +1,10 @@
+##########
 # python #
 ##########
 # ignoring the compliled files
 *.pyc
+
+###########
+# pycharm #
+###########
+*.idea/
