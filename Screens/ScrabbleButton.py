@@ -2,8 +2,9 @@ import wx
 import string
 
 class GameButton(wx.Button):
-    def __init__(self, parent, id, location):
-        wx.Button.__init__(self, parent, id, size=(60, 60))
+    def __init__(self, parent, id, location, size=(60, 60)):
+        wx.Button.__init__(self, parent, id, size=size)
+        self.SetMaxSize(size)
         self.letter = ""
         self.tile_used = False
         self.woordMultiplier = 1
@@ -12,7 +13,7 @@ class GameButton(wx.Button):
                       "g" : 2, "h" : 2, "i" : 1, "j" : 4, "k" : 4, "l" : 2,
                       "m" : 3, "n" : 1, "o" : 1, "p" : 3, "q" : 10, "r" : 1,
                       "s" : 1, "t" : 1, "u" : 4, "v" : 4, "w" : 4, "x" : 8,
-                      "y" : 8, "ij" : 4, "z" : 6, "" : 0}
+                      "y" : 8, "ij" : 4, "z" : 6,"" : 0}
         self.special = ""
         self.location = location
         self.SetFont(wx.Font(8, wx.FONTFAMILY_DEFAULT,
@@ -32,7 +33,7 @@ class GameButton(wx.Button):
         return(self.letter)
 
     def setLetter(self, sl_letter):
-        if sl_letter in list(string.ascii_lowercase):
+        if sl_letter in list(string.ascii_lowercase) or sl_letter == "ij":
             if sl_letter != "q":
                 label = ' %s\u208%s' % (sl_letter.upper(),
                                         self.score[sl_letter])
@@ -49,7 +50,7 @@ class GameButton(wx.Button):
                                        wx.FONTWEIGHT_NORMAL))
             self.SetBackgroundColour('white')
         else:
-            print("wrong letter given")
+            print("wrong letter given '{}'".format(sl_letter))
 
     def setTileUsed(self):
         self.tile_used = True
@@ -78,6 +79,7 @@ class GameButton(wx.Button):
         self.SetFont(wx.Font(8, wx.FONTFAMILY_DEFAULT,
                                        wx.FONTSTYLE_NORMAL,
                                        wx.FONTWEIGHT_NORMAL))
+        letter = self.letter
         self.letter = ""
         self.tile_used = False
         if self.special == "dl":
@@ -95,6 +97,7 @@ class GameButton(wx.Button):
             self.letterMultiplier = 1
             self.SetLabel("")
             self.SetBackgroundColour(wx.NullColour)
+        return letter
         
 
     def setDubbelLetter(self):

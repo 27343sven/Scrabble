@@ -1,7 +1,7 @@
 from random import shuffle
 
 class ScrableGame:
-    def __init__(self):
+    def __init__(self, default_letters=7):
         self.standard_letters = {"a": 6, "b": 2, "c": 2, "d": 5,
                                  "e": 18, "f": 2, "g": 3, "h": 2,
                                  "i": 4, "j": 2, "k": 3, "l": 3,
@@ -14,7 +14,8 @@ class ScrableGame:
         self.player_info = {}
         self.current_player = ""
         self.current_beurt = 1
-        print(self.letters)
+        self.letters_gespeeld = 0
+        self.default_letters = default_letters
 
     def fillLetters(self):
         letters = []
@@ -22,6 +23,16 @@ class ScrableGame:
             letters += [letter] * self.standard_letters[letter]
         shuffle(letters)
         return letters
+
+    def getPlayerLetters(self):
+        return list(self.player_info[self.current_player]['letters'])
+
+    def playLetter(self, letter):
+        player_letters = self.player_info[self.current_player]['letters']
+        return player_letters.pop(player_letters.index(letter))
+
+    def clearLetter(self, letter):
+        self.player_info[self.current_player]['letters'].append(letter)
 
     def popLetter(self):
         if self.letters:
@@ -32,7 +43,7 @@ class ScrableGame:
     def setPlayers(self, players):
         self.players = players
         for player in players:
-            self.player_info[player] = {'letters': [self.popLetter() for x in range(7)], 'score': 0}
+            self.player_info[player] = {'letters': [self.popLetter() for x in range(self.default_letters)], 'score': 0}
         self.current_player = self.players[0]
         self.current_beurt = 1
 
@@ -46,6 +57,10 @@ class ScrableGame:
 
     def getCurrentPlayer(self):
         return self.current_player
+
+    def isHandFull(self):
+        return True if len(self.letters) == self.default_letters else False
+
 
 
 
