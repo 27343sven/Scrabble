@@ -2,7 +2,7 @@ import wx
 import string
 
 class GameButton(wx.Button):
-    def __init__(self, parent, id, location, size=(50, 50)):
+    def __init__(self, parent, id, location, size=(60, 60)):
         wx.Button.__init__(self, parent, id, size=size)
         self.SetMaxSize(size)
         self.letter = ""

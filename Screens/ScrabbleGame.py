@@ -14,6 +14,7 @@ class ScrableGame:
         self.player_info = {}
         self.current_player = ""
         self.current_beurt = 1
+        self.letters_gespeeld = 0
         self.default_letters = default_letters
 
     def fillLetters(self):

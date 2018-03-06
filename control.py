@@ -51,11 +51,6 @@ class Schermpje2(wx.Frame):
         self.Show(True)
 
     def bindAll(self):
-        """
-        roept alle bind methoden aan voor elk scherm
-        :return:
-        """
-
         self.bindMenu()
         self.bindHighscores()
         self.bindPreGame()
@@ -70,6 +65,7 @@ class Schermpje2(wx.Frame):
             for button in row:
                 button.Bind(wx.EVT_BUTTON, self.onScrabbleButton)
         self.schermen['speelbord'][0].clearButton.Bind(wx.EVT_BUTTON, self.onClearButton)
+        self.schermen['speelbord'][0].nextTurnButton.Bind(wx.EVT_BUTTON, self.onNextTurnButton)
 
     def onScrabbleButton(self, event):
         current_object = event.GetEventObject()
@@ -91,11 +87,15 @@ class Schermpje2(wx.Frame):
         self.game.playLetter(letter)
         self.schermen['speelbord'][0].hand.removeLetter(letter)
         self.schermen['speelbord'][0].hand.Layout()
+        self.game.letters_gespeeld += 1
+        self.schermen['speelbord'][0].beurtLetters.SetLabel(str(self.game.letters_gespeeld))
 
     def clearLetter(self, letter):
         self.game.clearLetter(letter)
         self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
         self.schermen['speelbord'][0].hand.Layout()
+        self.game.letters_gespeeld -= 1
+        self.schermen['speelbord'][0].beurtLetters.SetLabel(str(self.game.letters_gespeeld))
 
     def bindPreGameOptions(self):
         self.schermen['spelSettings'][0].spelenButton.Bind(wx.EVT_BUTTON, self.onPreGameOptionsSpelenButton)
@@ -129,6 +129,65 @@ class Schermpje2(wx.Frame):
         scherm = self.schermen['woordenVerwijder'][0]
         for button in scherm.buttons:
             button.Bind(wx.EVT_BUTTON, self.onVerwijderButton)
+
+    def onNextTurnButton(self, event):
+        if self.game.letters_gespeeld == 0:
+            # als er geen letters in de beurt zijn gespeeld
+            pass
+        else:
+            score_list = []
+            for y in range(len(self.schermen['speelbord'][0].button_grid)):
+                for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
+                    if self.schermen['speelbord'][0].button_grid[y][x].getLetter() != "":
+                        if not y > 13 and self.schermen['speelbord'][0].button_grid[y][x + 1].getLetter() != "":
+                            tb_woord, tb_score = self.horizontalWord([y, x])
+                            if tb_woord != "Error":
+                                score_list.append([tb_woord, tb_score])
+                        if not x > 13 and self.schermen['speelbord'][0].button_grid[y + 1][x].getLetter() != "":
+                            tb_woord, tb_score = self.verticalWord([y, x])
+                            if tb_woord != "Error":
+                                score_list.append([tb_woord, tb_score])
+        self.game.nextTurn()
+
+    def horizontalWord(self, pos):
+        woord, new, woordMulti, woord_score, x, y = "", False, 1, 0, pos[1], pos[0]
+        if self.schermen['speelbord'][0].button_grid[y][x - 1].getLetter() == "":
+            while not x > 13 and self.schermen['speelbord'][0].button_grid[y][x + 1].getLetter() != "":
+                woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
+                woordMulti *= self.schermen['speelbord'][0].button_grid[y][x].getWoordMultiplier()
+                woord += self.schermen['speelbord'][0].button_grid[y][x].getLetter()
+                if not self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
+                    new = True
+                x += 1
+            woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
+            woordMulti *= self.schermen['speelbord'][0].button_grid[y][x].getWoordMultiplier()
+            woord += self.schermen['speelbord'][0].button_grid[y][x].getLetter()
+            if not self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
+                new = True
+            if new:
+                score = woord_score * woordMulti
+                return woord, score
+        return "Error", 0
+
+    def verticalWord(self, pos):
+        woord, new, woordMulti, woord_score, x, y = "", False, 1, 0, pos[1], pos[0]
+        if self.schermen['speelbord'][0].button_grid[y - 1][x].getLetter() == "":
+            while not y > 13 and self.schermen['speelbord'][0].button_grid[y + 1][x].getLetter() != "":
+                woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
+                woordMulti *= self.schermen['speelbord'][0].button_grid[y][x].getWoordMultiplier()
+                woord += self.schermen['speelbord'][0].button_grid[y][x].getLetter()
+                if not self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
+                    new = True
+                y += 1
+            woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
+            woordMulti *= self.schermen['speelbord'][0].button_grid[y][x].getWoordMultiplier()
+            woord += self.schermen['speelbord'][0].button_grid[y][x].getLetter()
+            if not self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
+                new = True
+            if new:
+                score = woord_score * woordMulti
+                return woord, score
+        return "Error", 0
 
     def onClearButton(self, event):
         for row in self.schermen['speelbord'][0].button_grid:
