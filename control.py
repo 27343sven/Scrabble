@@ -147,7 +147,18 @@ class Schermpje2(wx.Frame):
                             tb_woord, tb_score = self.verticalWord([y, x])
                             if tb_woord != "Error":
                                 score_list.append([tb_woord, tb_score])
-        self.game.nextTurn()
+            self.game.addScore(score_list)
+            self.lockLetters()
+            self.game.nextTurn()
+            self.refreshInfo()
+            print(self.game.log)
+
+    def lockLetters(self):
+        for y in range(len(self.schermen['speelbord'][0].button_grid)):
+            for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
+                button = self.schermen['speelbord'][0].button_grid[y][x]
+                if button.getLetter() != "" and not button.getTileStatus():
+                    button.setTileUsed()
 
     def horizontalWord(self, pos):
         woord, new, woordMulti, woord_score, x, y = "", False, 1, 0, pos[1], pos[0]
@@ -188,6 +199,14 @@ class Schermpje2(wx.Frame):
                 score = woord_score * woordMulti
                 return woord, score
         return "Error", 0
+
+    def refreshInfo(self):
+        self.schermen['speelbord'][0].speler.SetLabel(self.game.getCurrentPlayer())
+        self.schermen['speelbord'][0].score.SetLabel(str(self.game.getCurrentScore()))
+        self.schermen['speelbord'][0].beurtLetters.SetLabel(str(self.game.getAantalLettersGespeeld()))
+        self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
+        self.schermen['speelbord'][0].textbox.SetValue("\n".join(self.game.getLog()))
+        self.setScherm('speelbord')
 
     def onClearButton(self, event):
         for row in self.schermen['speelbord'][0].button_grid:
