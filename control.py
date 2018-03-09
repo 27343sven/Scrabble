@@ -12,6 +12,7 @@ from Screens.LetterInwisselScanner import Picker as letterInwisselPopup
 from Screens.PopupLetterScanner import Picker as letterSelectiePopup
 
 import wx
+import csv
 
 class Schermpje2(wx.Frame):
     def __init__(self, parent, id, title):
@@ -62,6 +63,7 @@ class Schermpje2(wx.Frame):
     def bindHighscores(self):
         scherm = self.schermen['highscores'][0]
         scherm.backButton.Bind(wx.EVT_BUTTON, self.onHighscoreButton)
+        scherm.csvButton.Bind(wx.EVT_BUTTON, self.onHighscoreButton)
 
     def bindPreGame(self):
         scherm = self.schermen['spelSettings'][0]
@@ -98,36 +100,48 @@ class Schermpje2(wx.Frame):
         object = event.GetEventObject()
         if object.GetId() == 1:
             self.setScherm('menu')
+        elif object.GetId() == 2:
+            dialog = wx.FileDialog(
+                self, "Save CSV file", wildcard="CSV files (*.csv)|*.csv",
+                style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+            if dialog.ShowModal() == wx.ID_CANCEL:
+                return
+            paths = dialog.GetPaths()
+            dialog.Destroy()
+            if len(paths) != 0:
+                with open(paths[0], "w") as output:
+                    writer = csv.writer(output, lineterminator='\n')
+                    writer.writerows(self.schermen['highscores'][0].scoreData)
             
     def onPreGameButton(self, event):
         object = event.GetEventObject()
-        if object.GetId() == -31943:    ##idk don't question it...
+        if object.GetId() == 1:
             self.setScherm('menu')
-        elif object.GetId() == -31942:
+        elif object.GetId() == 2:
             self.setScherm('speelbord')
 
     def onSettingsButton(self, event):
         object = event.GetEventObject()
-        if object.GetId() == -31980:
+        if object.GetId() == 1:
             self.setScherm('menu')
-        elif object.GetId() == -31987:
-            self.setScherm('woordenToevoeg')     ##Uuh.. kreeg het niet als popup.
-        elif object.GetId() == -31986:
+        elif object.GetId() == 2:
+            self.setScherm('woordenToevoeg')
+        elif object.GetId() == 3:
             self.setScherm('woordenVerwijder')
 
     def onToevoegButton(self, event):
         object = event.GetEventObject()
-        if object.GetId() == -31966:
+        if object.GetId() == 1:
             self.setScherm('settings')
-        if object.GetId() == -31967:
+        if object.GetId() == 2:
             print("Toevoeg woord: " +
                 self.schermen['woordenToevoeg'][0].textBox.GetValue().lower())
 
     def onVerwijderButton(self, event):
         object = event.GetEventObject()
-        if object.GetId() == -31960:
+        if object.GetId() == 1:
             self.setScherm('settings')
-        if object.GetId() == -31961:    
+        if object.GetId() == 2:    
             print("Verwijder woord: " +
                   self.schermen['woordenVerwijder'][0].textBox.GetValue().lower())
 
