@@ -18,6 +18,7 @@ class ScrableGame:
         self.letters_gespeeld = 0
         self.default_letters = default_letters
         self.log = []
+        self.firstTurn = True
 
     def fillLetters(self):
         letters = []
@@ -68,6 +69,8 @@ class ScrableGame:
         self.current_beurt = 1
 
     def nextTurn(self):
+        if self.firstTurn:
+            self.firstTurn = False
         index = self.players.index(self.current_player)
         self.refillPlayerLetters()
         if index + 1 >= len(self.players):
@@ -95,6 +98,8 @@ class ScrableGame:
     def getLog(self):
         return self.log
 
+    def isFirstTurn(self):
+        return self.firstTurn
 
 
 

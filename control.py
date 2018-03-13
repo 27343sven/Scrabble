@@ -135,23 +135,30 @@ class Schermpje2(wx.Frame):
             # als er geen letters in de beurt zijn gespeeld
             pass
         else:
-            score_list = []
+            score_list, validTrun, statusList = [], True, []
             for y in range(len(self.schermen['speelbord'][0].button_grid)):
                 for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
                     if self.schermen['speelbord'][0].button_grid[y][x].getLetter() != "":
-                        if not y > 13 and self.schermen['speelbord'][0].button_grid[y][x + 1].getLetter() != "":
-                            tb_woord, tb_score = self.horizontalWord([y, x])
-                            if tb_woord != "Error":
+                        if not x > 13 and self.getNextTileLetter((x, y), True) != "":
+                            tb_status, tb_woord, tb_score = self.checkForWoord((x, y), True)
+                            statusList.append(tb_status)
+                            if tb_status == "ok":
                                 score_list.append([tb_woord, tb_score])
-                        if not x > 13 and self.schermen['speelbord'][0].button_grid[y + 1][x].getLetter() != "":
-                            tb_woord, tb_score = self.verticalWord([y, x])
-                            if tb_woord != "Error":
+                        if not y > 13 and self.getNextTileLetter((x, y), False) != "":
+                            tb_status, tb_woord, tb_score = self.checkForWoord((x, y), False)
+                            statusList.append(tb_status)
+                            if tb_status == "ok":
                                 score_list.append([tb_woord, tb_score])
-            self.game.addScore(score_list)
-            self.lockLetters()
-            self.game.nextTurn()
-            self.refreshInfo()
-            print(self.game.log)
+            if "notInMiddle" in statusList:
+                dlg = wx.MessageDialog(self, "Must place first word in middle.", "Word not in middle", wx.OK | wx.ICON_WARNING)
+                dlg.ShowModal()
+                dlg.Destroy()
+            if score_list:
+                self.game.addScore(score_list)
+                self.lockLetters()
+                self.game.nextTurn()
+                self.refreshInfo()
+                print(self.game.log)
 
     def lockLetters(self):
         for y in range(len(self.schermen['speelbord'][0].button_grid)):
@@ -160,45 +167,64 @@ class Schermpje2(wx.Frame):
                 if button.getLetter() != "" and not button.getTileStatus():
                     button.setTileUsed()
 
-    def horizontalWord(self, pos):
-        woord, new, woordMulti, woord_score, x, y = "", False, 1, 0, pos[1], pos[0]
-        if self.schermen['speelbord'][0].button_grid[y][x - 1].getLetter() == "":
-            while not x > 13 and self.schermen['speelbord'][0].button_grid[y][x + 1].getLetter() != "":
-                woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
-                woordMulti *= self.schermen['speelbord'][0].button_grid[y][x].getWoordMultiplier()
-                woord += self.schermen['speelbord'][0].button_grid[y][x].getLetter()
-                if not self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
-                    new = True
-                x += 1
-            woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
-            woordMulti *= self.schermen['speelbord'][0].button_grid[y][x].getWoordMultiplier()
-            woord += self.schermen['speelbord'][0].button_grid[y][x].getLetter()
-            if not self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
-                new = True
-            if new:
-                score = woord_score * woordMulti
-                return woord, score
-        return "Error", 0
+    def getNextTileLetter(self, pos, horizontal):
+        x, y = pos[0], pos[1]
+        if horizontal and not x > 13:
+            return self.schermen['speelbord'][0].button_grid[y][x + 1].getLetter()
+        elif not y > 13:
+            return self.schermen['speelbord'][0].button_grid[y + 1][x].getLetter()
+        print("dit hoort niet te gebeuren")
+        return None
 
-    def verticalWord(self, pos):
-        woord, new, woordMulti, woord_score, x, y = "", False, 1, 0, pos[1], pos[0]
-        if self.schermen['speelbord'][0].button_grid[y - 1][x].getLetter() == "":
-            while not y > 13 and self.schermen['speelbord'][0].button_grid[y + 1][x].getLetter() != "":
-                woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
-                woordMulti *= self.schermen['speelbord'][0].button_grid[y][x].getWoordMultiplier()
-                woord += self.schermen['speelbord'][0].button_grid[y][x].getLetter()
-                if not self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
-                    new = True
-                y += 1
+    def getPreviousTileLetter(self, pos, horizontal):
+        x, y = pos[0], pos[1]
+        if horizontal and x > 0:
+            return self.schermen['speelbord'][0].button_grid[y][x - 1].getLetter()
+        elif y > 0:
+            return self.schermen['speelbord'][0].button_grid[y - 1][x].getLetter()
+        return None
+
+    def getAllTileLetters(self):
+        for y in range(len(self.schermen['speelbord'][0].button_grid)):
+            for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
+                letter = self.schermen['speelbord'][0].button_grid[y][x].getLetter()
+                if letter:
+                    print("{}|{}|{}".format(x, y, letter))
+
+
+
+    def findWoord(self, pos, horizontal):
+        woord, new, woordMulti, woord_score, x, y, middle = "", False, 1, 0, pos[0], pos[1], False
+        while not y > 13 and not x > 13:
+            if x == 7 and y == 7:
+                middle = True
             woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
             woordMulti *= self.schermen['speelbord'][0].button_grid[y][x].getWoordMultiplier()
             woord += self.schermen['speelbord'][0].button_grid[y][x].getLetter()
             if not self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
                 new = True
+            if self.getNextTileLetter((x, y), horizontal) == "":
+                break
+            if horizontal:
+                x += 1
+            else:
+                y += 1
+        # woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
+        # woordMulti *= self.schermen['speelbord'][0].button_grid[y][x].getWoordMultiplier()
+        # woord += self.schermen['speelbord'][0].button_grid[y][x].getLetter()
+        # if x == 7 and y == 7:
+        #     middle = True
+        return new, woord, woordMulti, woord_score, middle
+
+    def checkForWoord(self, pos, horizontal):
+        if self.getPreviousTileLetter(pos, horizontal) == "":
+            new, woord, woordMulti, woord_score, middle = self.findWoord(pos, horizontal)
             if new:
+                if self.game.isFirstTurn() and not middle:
+                    return "notInMiddle", "Error", 0
                 score = woord_score * woordMulti
-                return woord, score
-        return "Error", 0
+                return "ok", woord, score
+        return "notNew", "Error", 0
 
     def refreshInfo(self):
         self.schermen['speelbord'][0].speler.SetLabel(self.game.getCurrentPlayer())
@@ -214,7 +240,6 @@ class Schermpje2(wx.Frame):
                 if button.getLetter() != "" and not button.getTileStatus():
                     letter = button.resetButton()
                     self.clearLetter(letter)
-
 
     def onPreGameOptionsSpelenButton(self, event):
         scherm = self.schermen['spelSettings'][0]
