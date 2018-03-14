@@ -132,9 +132,20 @@ class Schermpje2(wx.Frame):
 
     def onNextTurnButton(self, event):
         if self.game.letters_gespeeld == 0:
-            # als er geen letters in de beurt zijn gespeeld
+            dlg = wx.MessageDialog(self, "Please place a word before going to the next turn. If you cannot place a word you can exchange your letters.", "No Letters Played",
+                                   wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
             pass
         else:
+            if not self.checkIfNewLettersInLine():
+                dlg = wx.MessageDialog(self,
+                                       "All letters must be placed in one line.",
+                                       "Letters not in line",
+                                       wx.OK | wx.ICON_WARNING)
+                dlg.ShowModal()
+                dlg.Destroy()
+                return
             score_list, validTrun, statusList = [], True, []
             for y in range(len(self.schermen['speelbord'][0].button_grid)):
                 for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
@@ -166,6 +177,18 @@ class Schermpje2(wx.Frame):
                 button = self.schermen['speelbord'][0].button_grid[y][x]
                 if button.getLetter() != "" and not button.getTileStatus():
                     button.setTileUsed()
+
+    def checkIfNewLettersInLine(self):
+        all_x, all_y = [], []
+        for y in range(len(self.schermen['speelbord'][0].button_grid)):
+            for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
+                if self.schermen['speelbord'][0].button_grid[y][x].getLetter() != "":
+                    all_x.append(x)
+                    all_y.append(y)
+        if len(set(all_x)) == 1 or len(set(all_y)) == 1:
+            return True
+        else:
+            return False
 
     def getNextTileLetter(self, pos, horizontal):
         x, y = pos[0], pos[1]
@@ -209,11 +232,6 @@ class Schermpje2(wx.Frame):
                 x += 1
             else:
                 y += 1
-        # woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
-        # woordMulti *= self.schermen['speelbord'][0].button_grid[y][x].getWoordMultiplier()
-        # woord += self.schermen['speelbord'][0].button_grid[y][x].getLetter()
-        # if x == 7 and y == 7:
-        #     middle = True
         return new, woord, woordMulti, woord_score, middle
 
     def checkForWoord(self, pos, horizontal):
