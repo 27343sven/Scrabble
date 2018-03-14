@@ -69,7 +69,7 @@ class Schermpje2(wx.Frame):
 
     def onScrabbleButton(self, event):
         current_object = event.GetEventObject()
-        if not current_object.getTileStatus():
+        if not current_object.getTileStatus() and not (self.game.isHandEmpty() and current_object.getLetter() == ""):
             test = Picker(self.game.getPlayerLetters(), clear=current_object.getLetter() != "")
             test.ShowModal()
             out = test.choice
@@ -199,6 +199,8 @@ class Schermpje2(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
         elif score_list:
+            if self.game.isHandEmpty():
+                score_list.append(["Bonus", 50])
             self.game.addScore(score_list)
             self.lockLetters()
             self.game.nextTurn()
@@ -278,7 +280,7 @@ class Schermpje2(wx.Frame):
 
     def findWoord(self, pos, horizontal):
         woord, new, woordMulti, woord_score, x, y, middle, connected = "", False, 1, 0, pos[0], pos[1], False, False
-        while not y > 13 and not x > 13:
+        while True:
             if x == 7 and y == 7:
                 middle = True
             woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
@@ -293,6 +295,8 @@ class Schermpje2(wx.Frame):
                     print("yay")
                     connected = True
                 new = True
+            if (y > 13 if not horizontal else False) or (x > 13 if horizontal else False):
+                break
             if self.getNextTileLetter((x, y), horizontal) == "":
                 break
             if horizontal:
@@ -302,7 +306,7 @@ class Schermpje2(wx.Frame):
         return new, woord, woordMulti, woord_score, middle, connected
 
     def checkForWoord(self, pos, horizontal):
-        if self.getPreviousTileLetter(pos, horizontal) == "":
+        if self.getPreviousTileLetter(pos, horizontal) == "" or (horizontal and pos[0] == 0) or (not horizontal and pos[1] == 0):
             new, woord, woordMulti, woord_score, middle, connected = self.findWoord(pos, horizontal)
             if new:
                 if self.game.isFirstTurn() and not middle:

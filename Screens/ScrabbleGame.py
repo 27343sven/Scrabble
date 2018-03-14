@@ -30,7 +30,7 @@ class ScrableGame:
     def addScore(self, score_list):
         self.log.append("==={}===".format(self.current_player))
         for woord, score in score_list:
-            self.log.append("{}\t{}".format(woord,score))
+            self.log.append("{:20}{:>3}".format(woord, score))
             self.player_info[self.current_player]['score'] += score
 
     def getPlayerLetters(self):
@@ -94,6 +94,9 @@ class ScrableGame:
 
     def isHandFull(self):
         return True if len(self.letters) == self.default_letters else False
+
+    def isHandEmpty(self):
+        return True if self.letters_gespeeld >= self.default_letters else False
 
     def getLog(self):
         return self.log
