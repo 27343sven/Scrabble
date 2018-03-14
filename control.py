@@ -164,7 +164,12 @@ class Schermpje2(wx.Frame):
                 dlg = wx.MessageDialog(self, "Must place first word in middle.", "Word not in middle", wx.OK | wx.ICON_WARNING)
                 dlg.ShowModal()
                 dlg.Destroy()
-            if score_list:
+            elif "notConnected" in statusList:
+                dlg = wx.MessageDialog(self, "New words must connect to old ones.", "Word not connected",
+                                       wx.OK | wx.ICON_WARNING)
+                dlg.ShowModal()
+                dlg.Destroy()
+            elif score_list:
                 self.game.addScore(score_list)
                 self.lockLetters()
                 self.game.nextTurn()
@@ -182,7 +187,8 @@ class Schermpje2(wx.Frame):
         all_x, all_y = [], []
         for y in range(len(self.schermen['speelbord'][0].button_grid)):
             for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
-                if self.schermen['speelbord'][0].button_grid[y][x].getLetter() != "":
+                if self.schermen['speelbord'][0].button_grid[y][x].getLetter() != "" \
+                        and not self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
                     all_x.append(x)
                     all_y.append(y)
         if len(set(all_x)) == 1 or len(set(all_y)) == 1:
@@ -217,29 +223,34 @@ class Schermpje2(wx.Frame):
 
 
     def findWoord(self, pos, horizontal):
-        woord, new, woordMulti, woord_score, x, y, middle = "", False, 1, 0, pos[0], pos[1], False
+        woord, new, woordMulti, woord_score, x, y, middle, connected = "", False, 1, 0, pos[0], pos[1], False, False
         while not y > 13 and not x > 13:
             if x == 7 and y == 7:
                 middle = True
             woord_score += self.schermen['speelbord'][0].button_grid[y][x].getLetterScore()
             woordMulti *= self.schermen['speelbord'][0].button_grid[y][x].getWoordMultiplier()
             woord += self.schermen['speelbord'][0].button_grid[y][x].getLetter()
-            if not self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
+            if self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
+                connected = True
+            else:
                 new = True
+
             if self.getNextTileLetter((x, y), horizontal) == "":
                 break
             if horizontal:
                 x += 1
             else:
                 y += 1
-        return new, woord, woordMulti, woord_score, middle
+        return new, woord, woordMulti, woord_score, middle, connected
 
     def checkForWoord(self, pos, horizontal):
         if self.getPreviousTileLetter(pos, horizontal) == "":
-            new, woord, woordMulti, woord_score, middle = self.findWoord(pos, horizontal)
+            new, woord, woordMulti, woord_score, middle, connected = self.findWoord(pos, horizontal)
             if new:
                 if self.game.isFirstTurn() and not middle:
                     return "notInMiddle", "Error", 0
+                if not self.game.isFirstTurn() and not connected:
+                    return "notConnected", "Error", 0
                 score = woord_score * woordMulti
                 return "ok", woord, score
         return "notNew", "Error", 0
