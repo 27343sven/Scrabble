@@ -136,45 +136,73 @@ class Schermpje2(wx.Frame):
                                    wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
             dlg.Destroy()
-            pass
-        else:
-            if not self.checkIfNewLettersInLine():
-                dlg = wx.MessageDialog(self,
-                                       "All letters must be placed in one line.",
-                                       "Letters not in line",
-                                       wx.OK | wx.ICON_WARNING)
-                dlg.ShowModal()
-                dlg.Destroy()
-                return
-            score_list, validTrun, statusList = [], True, []
-            for y in range(len(self.schermen['speelbord'][0].button_grid)):
-                for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
-                    if self.schermen['speelbord'][0].button_grid[y][x].getLetter() != "":
-                        if not x > 13 and self.getNextTileLetter((x, y), True) != "":
-                            tb_status, tb_woord, tb_score = self.checkForWoord((x, y), True)
-                            statusList.append(tb_status)
-                            if tb_status == "ok":
-                                score_list.append([tb_woord, tb_score])
-                        if not y > 13 and self.getNextTileLetter((x, y), False) != "":
-                            tb_status, tb_woord, tb_score = self.checkForWoord((x, y), False)
-                            statusList.append(tb_status)
-                            if tb_status == "ok":
-                                score_list.append([tb_woord, tb_score])
-            if "notInMiddle" in statusList:
-                dlg = wx.MessageDialog(self, "Must place first word in middle.", "Word not in middle", wx.OK | wx.ICON_WARNING)
-                dlg.ShowModal()
-                dlg.Destroy()
-            elif "notConnected" in statusList:
-                dlg = wx.MessageDialog(self, "New words must connect to old ones.", "Word not connected",
-                                       wx.OK | wx.ICON_WARNING)
-                dlg.ShowModal()
-                dlg.Destroy()
-            elif score_list:
-                self.game.addScore(score_list)
-                self.lockLetters()
-                self.game.nextTurn()
-                self.refreshInfo()
-                print(self.game.log)
+            return
+        if not self.checkIfNewLettersInLine():
+            dlg = wx.MessageDialog(self,
+                                    "All letters must be placed in one line.",
+                                    "Letters not in line",
+                                    wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        if self.checkLosseLetters():
+            dlg = wx.MessageDialog(self,
+                                   "There are still lone letters on the board.",
+                                   "Lose letters",
+                                   wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        score_list, validTrun, statusList, position_list = [], True, [], []
+        for y in range(len(self.schermen['speelbord'][0].button_grid)):
+            for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
+                if self.schermen['speelbord'][0].button_grid[y][x].getLetter() != "":
+                    if not x > 13 and self.getNextTileLetter((x, y), True) != "":
+                        tb_status, tb_woord, tb_score, word_pos = self.checkForWoord((x, y), True)
+                        statusList.append(tb_status)
+                        if tb_status == "ok":
+                            position_list.append(word_pos)
+                            score_list.append([tb_woord, tb_score])
+                        if self.game.isFirstTurn():
+                            if tb_status == "notInMiddle":
+                                position_list.append(word_pos)
+                        else:
+                            if tb_status == "notConnected":
+                                position_list.append(word_pos)
+                    if not y > 13 and self.getNextTileLetter((x, y), False) != "":
+                        tb_status, tb_woord, tb_score, word_pos = self.checkForWoord((x, y), False)
+                        statusList.append(tb_status)
+                        if tb_status == "ok":
+                            position_list.append(word_pos)
+                            score_list.append([tb_woord, tb_score])
+                        if self.game.isFirstTurn():
+                            if tb_status == "notInMiddle":
+                                position_list.append(word_pos)
+                        else:
+                            if tb_status == "notConnected":
+                                position_list.append(word_pos)
+        if len(position_list) != len(set(position_list)):
+            # als er twee geldige woorden op dezelfde lijn worden gespeeld
+            dlg = wx.MessageDialog(self, "You can only place one word.", "Multiple words",
+                                   wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+        elif "notConnected" in statusList:
+            # als er woorden niet aan oude letters liggen na de eerste beurt
+            dlg = wx.MessageDialog(self, "New words must connect to old ones.", "Word not connected",
+                                   wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+        elif "notInMiddle" in statusList:
+            # als de letters niet in het midden liggen tijdens de eerste beurt
+            dlg = wx.MessageDialog(self, "Must place first word in middle.", "Word not in middle", wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+        elif score_list:
+            self.game.addScore(score_list)
+            self.lockLetters()
+            self.game.nextTurn()
+            self.refreshInfo()
 
     def lockLetters(self):
         for y in range(len(self.schermen['speelbord'][0].button_grid)):
@@ -196,14 +224,34 @@ class Schermpje2(wx.Frame):
         else:
             return False
 
+    def checkLosseLetters(self):
+        for y in range(len(self.schermen['speelbord'][0].button_grid)):
+            for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
+                if self.schermen['speelbord'][0].button_grid[y][x].getLetter() != "":
+                    isConnected = False
+                    for orientation in (True, False):
+                        if self.getNextTileLetter((x, y), orientation) != "" or self.getPreviousTileLetter((x, y), orientation) != "":
+                            isConnected = True
+                    if not isConnected:
+                        return True
+        return False
+
+
     def getNextTileLetter(self, pos, horizontal):
         x, y = pos[0], pos[1]
         if horizontal and not x > 13:
             return self.schermen['speelbord'][0].button_grid[y][x + 1].getLetter()
         elif not y > 13:
             return self.schermen['speelbord'][0].button_grid[y + 1][x].getLetter()
-        print("dit hoort niet te gebeuren")
         return None
+
+    def getNextTileStatus(self, pos, horizontal):
+        x, y = pos[0], pos[1]
+        if horizontal and not x > 13:
+            return self.schermen['speelbord'][0].button_grid[y][x + 1].getTileStatus()
+        elif not y > 13:
+            return self.schermen['speelbord'][0].button_grid[y + 1][x].getTileStatus()
+        return False
 
     def getPreviousTileLetter(self, pos, horizontal):
         x, y = pos[0], pos[1]
@@ -213,14 +261,20 @@ class Schermpje2(wx.Frame):
             return self.schermen['speelbord'][0].button_grid[y - 1][x].getLetter()
         return None
 
+    def getPreviousTileStatus(self, pos, horizontal):
+        x, y = pos[0], pos[1]
+        if horizontal and x > 0:
+            return self.schermen['speelbord'][0].button_grid[y][x - 1].getTileStatus()
+        elif y > 0:
+            return self.schermen['speelbord'][0].button_grid[y - 1][x].getTileStatus()
+        return False
+
     def getAllTileLetters(self):
         for y in range(len(self.schermen['speelbord'][0].button_grid)):
             for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
                 letter = self.schermen['speelbord'][0].button_grid[y][x].getLetter()
                 if letter:
                     print("{}|{}|{}".format(x, y, letter))
-
-
 
     def findWoord(self, pos, horizontal):
         woord, new, woordMulti, woord_score, x, y, middle, connected = "", False, 1, 0, pos[0], pos[1], False, False
@@ -233,8 +287,12 @@ class Schermpje2(wx.Frame):
             if self.schermen['speelbord'][0].button_grid[y][x].getTileStatus():
                 connected = True
             else:
+                if self.getPreviousTileStatus((x, y), not horizontal) or self.getNextTileStatus((x, y), not horizontal):
+                    # als het gespeelde woord uit alleen maar nieuwe letters bestaat maar wel aan eerder
+                    # gespeelde letters ligt
+                    print("yay")
+                    connected = True
                 new = True
-
             if self.getNextTileLetter((x, y), horizontal) == "":
                 break
             if horizontal:
@@ -248,12 +306,12 @@ class Schermpje2(wx.Frame):
             new, woord, woordMulti, woord_score, middle, connected = self.findWoord(pos, horizontal)
             if new:
                 if self.game.isFirstTurn() and not middle:
-                    return "notInMiddle", "Error", 0
+                    return "notInMiddle", "Error", 0, (horizontal, pos[1] if horizontal else pos[0])
                 if not self.game.isFirstTurn() and not connected:
-                    return "notConnected", "Error", 0
+                    return "notConnected", "Error", 0, (horizontal, pos[1] if horizontal else pos[0])
                 score = woord_score * woordMulti
-                return "ok", woord, score
-        return "notNew", "Error", 0
+                return "ok", woord, score, (horizontal, pos[1] if horizontal else pos[0])
+        return "notNew", "Error", 0, (horizontal, pos[1] if horizontal else pos[0])
 
     def refreshInfo(self):
         self.schermen['speelbord'][0].speler.SetLabel(self.game.getCurrentPlayer())

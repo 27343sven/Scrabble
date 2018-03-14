@@ -59,7 +59,7 @@ class GameButton(wx.Button):
         self.tile_used = False
 
     def getTileStatus(self):
-        return(self.tile_used)
+        return self.tile_used if self.letter != "" else False
 
     def setWoordMultiplier(self, sw_number):
         if type(sw_number) == int:
