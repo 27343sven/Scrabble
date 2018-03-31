@@ -56,8 +56,8 @@ class Schermpje(wx.Panel):
 
     def makeButtonBox(self):
         buttonSizer = wx.BoxSizer()
-        self.backButton = wx.Button(self, -1, "Terug")
-        self.spelenButton = wx.Button(self, -1, "Spelen")
+        self.backButton = wx.Button(self, 1, "Terug")
+        self.spelenButton = wx.Button(self, 2, "Spelen")
         self.buttons = [self.backButton, self.spelenButton] #
         buttonSizer.Add(self.backButton, 1, wx.LEFT)
         buttonSizer.Add(wx.Panel(self, -1), 1,wx.CENTER)

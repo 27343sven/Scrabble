@@ -35,8 +35,9 @@ class Schermpje(wx.Panel):
 
     def makeRightButtonBox(self):
         mainBox = wx.BoxSizer(wx.VERTICAL)
-        #self.csvButton = wx.Button(self, -1, "opslaan als csv")
-        #mainBox.Add(self.csvButton, 1, wx.CENTER)
+        self.csvButton = wx.Button(self, 2, "opslaan als csv")
+        mainBox.AddSpacer(50)
+        mainBox.Add(self.csvButton, 1, wx.CENTER)
         return mainBox
 
     def makeGrid(self):
@@ -47,7 +48,7 @@ class Schermpje(wx.Panel):
             ["Michael", "9001"],
             ["Steven", "6969"]
         ]
-        data = data[:self.scoreboardLength]
+        self.scoreData = data[:self.scoreboardLength]
         table.CreateGrid(self.scoreboardLength, len(data[0]))
         header = data.pop(0)
         for i, x in enumerate(header):
