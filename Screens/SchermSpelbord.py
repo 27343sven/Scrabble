@@ -11,6 +11,7 @@ class Schermpje(wx.Panel):
         self.button_grid, self.board = self.make_board()
         self.textbox = wx.TextCtrl(self, value="",
                                    style=wx.TE_MULTILINE | wx.TE_READONLY)
+        self.textbox.SetFont(wx.Font(10, wx.MODERN, wx.NORMAL, wx.NORMAL, False))
         boxje.Add(self.left_side2(), 200, wx.EXPAND | wx.ALL)
         boxje.Add(self.center(self.board), 770, wx.EXPAND | wx.ALL)
         boxje.Add(self.textbox, 200, wx.EXPAND | wx.ALL)

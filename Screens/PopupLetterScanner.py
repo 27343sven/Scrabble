@@ -17,6 +17,7 @@ class Picker(wx.Dialog):
 
     def make_board(self):
         self.clearButton = wx.Button(self, -1, "Clear")
+        self.clearButton.SetMaxSize((70, 30))
         if not self.clear:
             self.clearButton.Hide()
         self.clearButton.Bind(wx.EVT_BUTTON, self.onClearButton)
@@ -28,6 +29,8 @@ class Picker(wx.Dialog):
             test.setLetter(self.letters[x])
             temp_boxje.Add(test, 50, 1)
             main_list.append(test)
+        if len(self.letters) == 0:
+            temp_boxje.AddSpacer(50)
         main_boxje.Add(temp_boxje, 50, 1)
         main_boxje.AddSpacer(20)
         main_boxje.Add(self.clearButton, 1, 1)
