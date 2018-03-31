@@ -68,8 +68,8 @@ class ScrableGame:
         self.current_player = self.players[0]
         self.current_beurt = 1
 
-    def nextTurn(self):
-        if self.firstTurn:
+    def nextTurn(self, inwissel=False):
+        if self.firstTurn and not inwissel:
             self.firstTurn = False
         index = self.players.index(self.current_player)
         self.refillPlayerLetters()

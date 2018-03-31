@@ -3,8 +3,8 @@ import string
 
 
 class GameButton(wx.ToggleButton):
-    def __init__(self, parent, id, location):
-        wx.ToggleButton.__init__(self, parent, id, size=(50, 50))
+    def __init__(self, parent, id, location, size=(60, 60)):
+        wx.ToggleButton.__init__(self, parent, id, size=size)
         self.letter = ""
         self.tile_used = False
         self.woordMultiplier = 1
@@ -16,7 +16,7 @@ class GameButton(wx.ToggleButton):
                       "y": 8, "z": 6, "": 0}
         self.special = ""
         self.location = location
-        self.SetFont(wx.Font(9, wx.FONTFAMILY_DEFAULT,
+        self.SetFont(wx.Font(18, wx.FONTFAMILY_DEFAULT,
                              wx.FONTSTYLE_NORMAL,
                              wx.FONTWEIGHT_NORMAL))
 
@@ -45,7 +45,7 @@ class GameButton(wx.ToggleButton):
                                           self.score[sl_letter]))
             """
             self.letter = sl_letter
-            self.SetFont(wx.Font(25, wx.FONTFAMILY_DEFAULT,
+            self.SetFont(wx.Font(18, wx.FONTFAMILY_DEFAULT,
                                  wx.FONTSTYLE_NORMAL,
                                  wx.FONTWEIGHT_NORMAL))
             self.SetBackgroundColour('white')
