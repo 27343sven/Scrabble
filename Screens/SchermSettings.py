@@ -40,8 +40,8 @@ class Schermpje(wx.Panel):
 
     def makeWoordenBox(self):
         woordenSizer = wx.BoxSizer(wx.VERTICAL)
-        self.woordToevoegButton = wx.Button(self, -1, "Woord toevoegen")
-        self.woordVerwijderButton = wx.Button(self, -1, "Woord verwijderen")
+        self.woordToevoegButton = wx.Button(self, 2, "Woord toevoegen")
+        self.woordVerwijderButton = wx.Button(self, 3, "Woord verwijderen")
         woordenSizer.AddSpacer(20)
         woordenSizer.Add(self.woordToevoegButton, 1, wx.LEFT)
         woordenSizer.AddSpacer(20)
@@ -58,7 +58,7 @@ class Schermpje(wx.Panel):
 
     def makeBackButton(self):
         buttonSizer = wx.BoxSizer()
-        self.backButton = wx.Button(self, -1, "Terug")
+        self.backButton = wx.Button(self, 1, "Terug")
         buttonSizer.Add(self.backButton, 1, wx.LEFT)
         buttonSizer.Add(wx.Panel(self, -1), 10)
         return buttonSizer

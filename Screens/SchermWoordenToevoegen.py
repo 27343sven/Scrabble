@@ -17,8 +17,8 @@ class Schermpje(wx.Panel):
 
     def makeButtonBox(self):
         buttonBox = wx.BoxSizer()
-        self.toevoegButton = wx.Button(self, -1, "Toevoegen")
-        self.terugButton = wx.Button(self, -1, "Terug")
+        self.toevoegButton = wx.Button(self, 2, "Toevoegen")
+        self.terugButton = wx.Button(self, 1, "Terug")
         self.buttons = [self.toevoegButton, self.terugButton] #
         buttonBox.Add(self.terugButton, 1, wx.LEFT)
         buttonBox.Add(wx.Panel(self, -1), 2)
