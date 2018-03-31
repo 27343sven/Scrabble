@@ -154,12 +154,20 @@ class Schermpje2(wx.Frame):
             dlg.Destroy()
             return
         score_list, validTrun, statusList, position_list = [], True, [], []
+        loneLettterList = []
         for y in range(len(self.schermen['speelbord'][0].button_grid)):
             for x in range(len(self.schermen['speelbord'][0].button_grid[y])):
                 if self.schermen['speelbord'][0].button_grid[y][x].getLetter() != "":
+                    loneLettter = 0
                     if not x > 13 and self.getNextTileLetter((x, y), True) != "":
                         tb_status, tb_woord, tb_score, word_pos = self.checkForWoord((x, y), True)
-                        statusList.append(tb_status)
+                        print(tb_status)
+                        if tb_status == "loneLetter":
+                            print("jup loneletter hor")
+                            loneLettter += 1
+                            loneLettterList.append([tb_woord, tb_score])
+                        else:
+                            statusList.append(tb_status)
                         if tb_status == "ok":
                             position_list.append(word_pos)
                             score_list.append([tb_woord, tb_score])
@@ -169,9 +177,18 @@ class Schermpje2(wx.Frame):
                         else:
                             if tb_status == "notConnected":
                                 position_list.append(word_pos)
+                    elif x == 0 or self.getPreviousTileLetter((x, y), True) == "":
+                        loneLettter += 1
+
                     if not y > 13 and self.getNextTileLetter((x, y), False) != "":
                         tb_status, tb_woord, tb_score, word_pos = self.checkForWoord((x, y), False)
-                        statusList.append(tb_status)
+                        print(tb_status)
+                        if tb_status == "loneLetter":
+                            print("jup loneletter ver")
+                            loneLettter += 1
+                            loneLettterList.append([tb_woord, tb_score])
+                        else:
+                            statusList.append(tb_status)
                         if tb_status == "ok":
                             position_list.append(word_pos)
                             score_list.append([tb_woord, tb_score])
@@ -181,24 +198,42 @@ class Schermpje2(wx.Frame):
                         else:
                             if tb_status == "notConnected":
                                 position_list.append(word_pos)
-        if len(position_list) != len(set(position_list)):
+                    elif y == 0 or self.getPreviousTileLetter((x, y), False) == "":
+                        loneLettter += 1
+                    if loneLettter > 1:
+                        statusList.append("loneLetter")
+        print(statusList.count("loneLetter"))
+        if statusList.count("loneLetter") > 1:
+            dlg = wx.MessageDialog(self,
+                                   "There are still lone letters on the board.",
+                                   "Lose letters",
+                                   wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        elif statusList.count("loneLetter") == 1:
+            score_list += loneLettterList
+        elif len(position_list) != len(set(position_list)):
             # als er twee geldige woorden op dezelfde lijn worden gespeeld
             dlg = wx.MessageDialog(self, "You can only place one word.", "Multiple words",
                                    wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
             dlg.Destroy()
+            return
         elif "notConnected" in statusList:
             # als er woorden niet aan oude letters liggen na de eerste beurt
             dlg = wx.MessageDialog(self, "New words must connect to old ones.", "Word not connected",
                                    wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
             dlg.Destroy()
+            return
         elif "notInMiddle" in statusList:
             # als de letters niet in het midden liggen tijdens de eerste beurt
             dlg = wx.MessageDialog(self, "Must place first word in middle.", "Word not in middle", wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
             dlg.Destroy()
-        elif score_list:
+            return
+        if score_list:
             if self.game.isHandEmpty():
                 score_list.append(["Bonus", 50])
             self.game.addScore(score_list)
@@ -232,7 +267,8 @@ class Schermpje2(wx.Frame):
                 if self.schermen['speelbord'][0].button_grid[y][x].getLetter() != "":
                     isConnected = False
                     for orientation in (True, False):
-                        if self.getNextTileLetter((x, y), orientation) != "" or self.getPreviousTileLetter((x, y), orientation) != "":
+                        if self.getNextTileLetter((x, y), orientation) not in ["", None] or \
+                                self.getPreviousTileLetter((x, y), orientation) not in ["", None]:
                             isConnected = True
                     if not isConnected:
                         return True
@@ -279,7 +315,7 @@ class Schermpje2(wx.Frame):
                     print("{}|{}|{}".format(x, y, letter))
 
     def findWoord(self, pos, horizontal):
-        woord, new, woordMulti, woord_score, x, y, middle, connected = "", False, 1, 0, pos[0], pos[1], False, False
+        woord, new, new_letters, woordMulti, woord_score, x, y, middle, connected = "", False, 0, 1, 0, pos[0], pos[1], False, False
         while True:
             if x == 7 and y == 7:
                 middle = True
@@ -292,9 +328,9 @@ class Schermpje2(wx.Frame):
                 if self.getPreviousTileStatus((x, y), not horizontal) or self.getNextTileStatus((x, y), not horizontal):
                     # als het gespeelde woord uit alleen maar nieuwe letters bestaat maar wel aan eerder
                     # gespeelde letters ligt
-                    print("yay")
                     connected = True
                 new = True
+                new_letters += 1
             if (y > 13 if not horizontal else False) or (x > 13 if horizontal else False):
                 break
             if self.getNextTileLetter((x, y), horizontal) == "":
@@ -303,17 +339,19 @@ class Schermpje2(wx.Frame):
                 x += 1
             else:
                 y += 1
-        return new, woord, woordMulti, woord_score, middle, connected
+        return new, new_letters, woord, woordMulti, woord_score, middle, connected
 
     def checkForWoord(self, pos, horizontal):
         if self.getPreviousTileLetter(pos, horizontal) == "" or (horizontal and pos[0] == 0) or (not horizontal and pos[1] == 0):
-            new, woord, woordMulti, woord_score, middle, connected = self.findWoord(pos, horizontal)
+            new, new_letters, woord, woordMulti, woord_score, middle, connected = self.findWoord(pos, horizontal)
+            score = woord_score * woordMulti
             if new:
                 if self.game.isFirstTurn() and not middle:
                     return "notInMiddle", "Error", 0, (horizontal, pos[1] if horizontal else pos[0])
                 if not self.game.isFirstTurn() and not connected:
                     return "notConnected", "Error", 0, (horizontal, pos[1] if horizontal else pos[0])
-                score = woord_score * woordMulti
+                if new_letters == 1:
+                    return "loneLetter", woord, score, (horizontal, pos[1] if horizontal else pos[0])
                 return "ok", woord, score, (horizontal, pos[1] if horizontal else pos[0])
         return "notNew", "Error", 0, (horizontal, pos[1] if horizontal else pos[0])
 
