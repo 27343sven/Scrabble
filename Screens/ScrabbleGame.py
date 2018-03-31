@@ -40,6 +40,9 @@ class ScrableGame:
         player_letters = self.player_info[self.current_player]['letters']
         return player_letters.pop(player_letters.index(letter))
 
+    def isLettersEmpty(self):
+        return True if self.letters else False
+
     def clearLetter(self, letter):
         self.player_info[self.current_player]['letters'].append(letter)
 

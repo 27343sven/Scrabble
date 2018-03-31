@@ -432,6 +432,8 @@ class Schermpje2(wx.Frame):
         self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
         self.schermen['speelbord'][0].textbox.SetValue("\n".join(self.game.getLog()))
         self.setScherm('speelbord')
+        if self.game.isLettersEmpty():
+            self.schermen['speelbord'][0].wisselButton.SetLabel("Beurt overslaan")
 
     def onClearButton(self, event):
         for row in self.schermen['speelbord'][0].button_grid:
