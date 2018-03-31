@@ -13,6 +13,7 @@ from Screens.PopupLetterScanner import Picker
 
 # classes
 from Screens.ScrabbleGame import ScrableGame
+from Screens.WordCheck import WordCheck
 
 import wx
 import csv
@@ -23,6 +24,7 @@ class Schermpje2(wx.Frame):
         self.schermen = {}
         self.initialiseerSchermen()
         self.game = ScrableGame()
+        self.woordenboek = WordCheck(path="./Media/")
         self.bindAll()
         self.setScherm('menu')
 
@@ -268,12 +270,25 @@ class Schermpje2(wx.Frame):
             dlg.Destroy()
             return
         if score_list:
-            if self.game.isHandEmpty():
-                score_list.append(["Bonus", 50])
-            self.game.addScore(score_list)
-            self.lockLetters()
-            self.game.nextTurn()
-            self.refreshInfo()
+            all_words_exist, false_woord = True, ""
+            for (woord, score) in score_list:
+                if not self.woordenboek.woordChecker(woord):
+                    all_words_exist = False
+                    false_woord = woord
+            if all_words_exist:
+                if self.game.isHandEmpty():
+                    score_list.append(["Bonus", 50])
+                self.game.addScore(score_list)
+                self.lockLetters()
+                self.game.nextTurn()
+                self.refreshInfo()
+            else:
+                dlg = wx.MessageDialog(self, "'{}' is not a word.".format(false_woord), "Word not found",
+                                       wx.OK | wx.ICON_WARNING)
+                dlg.ShowModal()
+                dlg.Destroy()
+                return
+
 
     def lockLetters(self):
         for y in range(len(self.schermen['speelbord'][0].button_grid)):

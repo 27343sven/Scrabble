@@ -1,7 +1,7 @@
 class WordCheck:
-    def __init__ (self):
-        self.path = "./"
-        file = open("woorden.lst","r")
+    def __init__ (self, path="../Media/", file="woorden.lst"):
+        self.path = path
+        file = open("{}{}".format(path, file), "r")
         self.lst_woorden = file.read().splitlines()
         file.close()
         self.lst_woorden = self.lst_woorden[1:]
