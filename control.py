@@ -10,6 +10,7 @@ from Screens.SchermResultaat import Schermpje as resultaatScherm
 
 # popups
 from Screens.PopupLetterScanner import Picker
+from Screens.LetterInwisselScanner import Picker as InwisselPopup
 
 # classes
 from Screens.ScrabbleGame import ScrableGame
@@ -69,6 +70,7 @@ class Schermpje2(wx.Frame):
                 button.Bind(wx.EVT_BUTTON, self.onScrabbleButton)
         self.schermen['speelbord'][0].clearButton.Bind(wx.EVT_BUTTON, self.onClearButton)
         self.schermen['speelbord'][0].nextTurnButton.Bind(wx.EVT_BUTTON, self.onNextTurnButton)
+        self.schermen['speelbord'][0].wisselButton.Bind(wx.EVT_BUTTON, self.onWisselButton)
 
     def onScrabbleButton(self, event):
         current_object = event.GetEventObject()
@@ -133,6 +135,20 @@ class Schermpje2(wx.Frame):
         scherm = self.schermen['woordenVerwijder'][0]
         for button in scherm.buttons:
             button.Bind(wx.EVT_BUTTON, self.onVerwijderButton)
+
+    def onWisselButton(self, event):
+        letters = self.game.getPlayerLetters()
+        self.onClearButton(event)
+        test = InwisselPopup(letters, icon_path="./Media/")
+        test.ShowModal()
+        if test.weggooiLetters:
+            for x in test.weggooiLetters:
+                self.game.playLetter(letters[x])
+            self.game.nextTurn(True)
+            self.refreshInfo()
+        else:
+            pass
+        test.Destroy()
 
     def onNextTurnButton(self, event):
         if self.game.letters_gespeeld == 0:
@@ -416,6 +432,8 @@ class Schermpje2(wx.Frame):
         self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
         self.schermen['speelbord'][0].textbox.SetValue("\n".join(self.game.getLog()))
         self.setScherm('speelbord')
+        if self.game.isLettersEmpty():
+            self.schermen['speelbord'][0].wisselButton.SetLabel("Beurt overslaan")
 
     def onClearButton(self, event):
         for row in self.schermen['speelbord'][0].button_grid:

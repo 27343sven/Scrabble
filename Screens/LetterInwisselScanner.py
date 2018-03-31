@@ -4,8 +4,8 @@ from ScrabbleToggleButton import GameButton
 
 
 class Picker(wx.Dialog):
-    def __init__(self, letters=('d', 'e', 'f', 'a', 'u', 'l', 't')):
-        wx.Dialog.__init__(self, None, -1, title="Scrabble!", size=(400, 300))
+    def __init__(self, letters=('d', 'e', 'f', 'a', 'u', 'l', 't'), icon_path="../Media/", icon_file="scrabble.ico"):
+        wx.Dialog.__init__(self, None, -1, title="Scrabble!", size=(500, 300))
         self.weggooiLetters = []
         self.buttonList, self.board = self.make_board(letters)
         self.SetSizer(self.board)
@@ -13,7 +13,7 @@ class Picker(wx.Dialog):
             x.Bind(wx.EVT_TOGGLEBUTTON, self.onButton)
         self.backButton.Bind(wx.EVT_BUTTON, self.onBackButton)
         icon = wx.EmptyIcon()
-        icon.CopyFromBitmap(wx.Bitmap("scrabble.ico", wx.BITMAP_TYPE_ANY))
+        icon.CopyFromBitmap(wx.Bitmap("{}{}".format(icon_path, icon_file), wx.BITMAP_TYPE_ANY))
         self.SetIcon(icon)
 
     def make_board(self, letters):

@@ -40,6 +40,9 @@ class ScrableGame:
         player_letters = self.player_info[self.current_player]['letters']
         return player_letters.pop(player_letters.index(letter))
 
+    def isLettersEmpty(self):
+        return True if self.letters else False
+
     def clearLetter(self, letter):
         self.player_info[self.current_player]['letters'].append(letter)
 
@@ -68,8 +71,8 @@ class ScrableGame:
         self.current_player = self.players[0]
         self.current_beurt = 1
 
-    def nextTurn(self):
-        if self.firstTurn:
+    def nextTurn(self, inwissel=False):
+        if self.firstTurn and not inwissel:
             self.firstTurn = False
         index = self.players.index(self.current_player)
         self.refillPlayerLetters()
