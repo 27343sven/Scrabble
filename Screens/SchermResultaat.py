@@ -2,31 +2,33 @@ import wx
 
 class Schermpje(wx.Panel):
 
-    def __init__(self, parent, id):
+    def __init__(self, parent, id, SCORE=['Steven', 9001]):
         wx.Panel.__init__(self, parent, id)
         boxje = wx.BoxSizer(wx.VERTICAL)
-        text = wx.StaticText(self, -1, "Resultaten:")
-        text.SetFont(wx.Font(30, wx.ROMAN, wx.NORMAL, wx.NORMAL))
+        self.text = wx.StaticText(self, -1, "Resultaten:")
+        self.text.SetFont(wx.Font(30, wx.ROMAN, wx.NORMAL, wx.NORMAL))
 
-        text2 = wx.StaticText(self, -1, "Winnaar: Steven")
-        text2.SetFont(wx.Font(20, wx.ROMAN, wx.NORMAL, wx.NORMAL))
+        self.text2 = wx.StaticText(self, -1, "Winnaar: " + SCORE[0])
+        self.text2.SetFont(wx.Font(20, wx.ROMAN, wx.NORMAL, wx.NORMAL))
 
-        text3 = wx.StaticText(self, -1, "Punten: 9001")
-        text3.SetFont(wx.Font(20, wx.ROMAN, wx.NORMAL, wx.NORMAL))
+        self.text3 = wx.StaticText(self, -1, "Punten: " + str(SCORE[1]))
+        self.text3.SetFont(wx.Font(20, wx.ROMAN, wx.NORMAL, wx.NORMAL))
 
-        boxje.Add(text, 2, wx.CENTER)
-        boxje.Add(text2, 1, wx.CENTER)
-        boxje.Add(text3, 1, wx.CENTER)
+        boxje.Add(self.text, 2, wx.CENTER)
+        boxje.Add(self.text2, 1, wx.CENTER)
+        boxje.Add(self.text3, 1, wx.CENTER)
         boxje.Add(self.makeBackButton())
         self.SetSizer(boxje)
 
     def makeBackButton(self):
         buttonSizer = wx.BoxSizer()
         self.backButton = wx.Button(self, 1, "Terug")
+        self.scoreBoardButton = wx.Button(self, 2, "Scoreboard")
         buttonSizer.Add(self.backButton, 1, wx.LEFT)
         buttonSizer.Add(wx.Panel(self, -1), 10)
+        buttonSizer.Add(self.scoreBoardButton, 1, wx.RIGHT)
         return buttonSizer
-
+    
     def center(self, item):
         vbox = wx.BoxSizer()
         hbox = wx.BoxSizer(wx.VERTICAL)

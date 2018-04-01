@@ -3,23 +3,23 @@ import wx.grid as gridlib
 
 class Schermpje(wx.Panel):
 
-    def __init__(self, parent, id):
+    def __init__(self, parent, id, data=[]):
         wx.Panel.__init__(self, parent, id)
         boxje = wx.BoxSizer(wx.VERTICAL)
         self.scoreboardLength = 7
         text = wx.StaticText(self, -1, "scorebord")
         text.SetFont(wx.Font(30, wx.ROMAN, wx.NORMAL, wx.NORMAL))
         boxje.Add(text, 1, wx.CENTER)
-        boxje.Add(self.makeScreen(), 6)
+        boxje.Add(self.makeScreen(data), 6)
         boxje.Add(self.makeBackButton(), 1, wx.ALIGN_BOTTOM, border=0)
         self.SetSizer(boxje)
 
-    def makeScreen(self):
+    def makeScreen(self, data=[]):
         mainBox = wx.BoxSizer()
         leftSizer = wx.BoxSizer(wx.VERTICAL)
         rightSizer = wx.BoxSizer(wx.VERTICAL)
         leftSizer.AddSpacer(40)
-        leftSizer.Add(self.makeGrid(), 1, wx.CENTER)
+        leftSizer.Add(self.makeGrid(data), 1, wx.CENTER)
         rightSizer.AddSpacer(40)
         rightSizer.Add(self.makeRightButtonBox(), 1, wx.CENTER)
         mainBox.Add(leftSizer, 1, wx.LEFT)
@@ -40,22 +40,23 @@ class Schermpje(wx.Panel):
         mainBox.Add(self.csvButton, 1, wx.CENTER)
         return mainBox
 
-    def makeGrid(self):
+    def makeGrid(self, data=[]):
         table = gridlib.Grid(self, -1)
-        data = [
-            ["naam", "score"],
-            ["Sven", "10000"],
-            ["Michael", "9001"],
-            ["Steven", "6969"]
-        ]
+        header = ["naam", "score"]
+
+        for i in [["Sven", 10000],
+            ["Michael", 9001],
+            ["Steven", 6969]]:
+            data.append(i)
+        
         self.scoreData = data[:self.scoreboardLength]
-        table.CreateGrid(self.scoreboardLength, len(data[0]))
-        header = data.pop(0)
+        self.scoreData.sort(key=lambda x: x[1], reverse=True)
+        table.CreateGrid(self.scoreboardLength, len(header))
         for i, x in enumerate(header):
             table.SetColLabelValue(i, x)
-        for i, row in enumerate(data):
+        for i, row in enumerate(self.scoreData):
             for j, item in enumerate(row):
-                table.SetCellValue(i, j, item)
+                table.SetCellValue(i, j, str(item))
         return table
 
 

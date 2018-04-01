@@ -24,6 +24,9 @@ class Schermpje(wx.Panel):
         self.nextTurnButton = wx.Button(self, 2, "Volgende Beurt")
         self.wisselButton = wx.Button(self, 3, "wissel in")
 
+        #Testbutton
+        self.endButton = wx.Button(self, 4, "end")
+
         # voeg de hele linker kant samen
         left_box = wx.BoxSizer(wx.VERTICAL)
         left_box.AddMany([(self.makeInfoBox(), 6, wx.EXPAND | wx.ALL),
