@@ -20,6 +20,7 @@ import wx
 import csv
 
 class Schermpje2(wx.Frame):
+    HIGHSCORES = []
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, id, title, size=(1200, 600))
         self.schermen = {}
@@ -72,6 +73,37 @@ class Schermpje2(wx.Frame):
         self.schermen['speelbord'][0].nextTurnButton.Bind(wx.EVT_BUTTON, self.onNextTurnButton)
         self.schermen['speelbord'][0].wisselButton.Bind(wx.EVT_BUTTON, self.onWisselButton)
 
+        #Test button
+        self.schermen['speelbord'][0].endButton.Bind(wx.EVT_BUTTON, self.onEndButton)
+
+
+    #Test button
+    def onEndButton(self, event):
+        # Get current scores and put it in a list
+        self.tempVar = self.game.getPlayerInfo()
+        currentScore = []
+        for i in self.tempVar:
+            currentScore.append([str(i), self.tempVar[i]['score']])
+        
+        # Appends list of current scores to existing highscores
+        for i in currentScore:
+            self.HIGHSCORES.append(i)
+
+        # Sort the list of scores from high to low
+        currentScore.sort(key=lambda x: x[1], reverse=True)
+        # Renew highscoreScreen to update scoreboard
+        self.schermen['highscores'] = [highscoreScherm(self, -1, self.HIGHSCORES), (500, 350)]
+        # Rebind buttons
+        self.bindHighscores()
+
+        # Renew resultscreen with current score winner.
+        self.schermen['resultaat'] = [resultaatScherm(self, -1, currentScore[0]), (500, 350)]
+        # Rebind buttons
+        self.bindResultaat()
+        self.setScherm('resultaat')
+        self.game.player_info = {}
+        currentScore = []
+
     def onScrabbleButton(self, event):
         current_object = event.GetEventObject()
         if not current_object.getTileStatus() and not (self.game.isHandEmpty() and current_object.getLetter() == ""):
@@ -102,9 +134,15 @@ class Schermpje2(wx.Frame):
         self.game.letters_gespeeld -= 1
         self.schermen['speelbord'][0].beurtLetters.SetLabel(str(self.game.letters_gespeeld))
 
+    def bindResultaat(self): 
+        scherm = self.schermen['resultaat'][0]
+        scherm.backButton.Bind(wx.EVT_BUTTON, self.onResultaatButton)
+        scherm.scoreBoardButton.Bind(wx.EVT_BUTTON, self.onResultaatButton)
+        
     def bindPreGameOptions(self):
-        self.schermen['spelSettings'][0].spelenButton.Bind(wx.EVT_BUTTON, self.onPreGameOptionsSpelenButton)
-        self.schermen['spelSettings'][0].backButton.Bind(wx.EVT_BUTTON, self.onPreGameOptionsTerugButton)
+        scherm = self.schermen['spelSettings'][0]
+        scherm.spelenButton.Bind(wx.EVT_BUTTON, self.onPreGameOptionsSpelenButton)
+        scherm.backButton.Bind(wx.EVT_BUTTON, self.onPreGameOptionsTerugButton)
 
     def bindMenu(self):
         scherm = self.schermen['menu'][0]
@@ -135,7 +173,7 @@ class Schermpje2(wx.Frame):
         scherm = self.schermen['woordenVerwijder'][0]
         for button in scherm.buttons:
             button.Bind(wx.EVT_BUTTON, self.onVerwijderButton)
-
+    
     def onWisselButton(self, event):
         letters = self.game.getPlayerLetters()
         self.onClearButton(event)
@@ -487,7 +525,14 @@ class Schermpje2(wx.Frame):
                 with open(paths[0], "w") as output:
                     writer = csv.writer(output, lineterminator='\n')
                     writer.writerows(self.schermen['highscores'][0].scoreData)
-            
+
+    def onResultaatButton(self, event):
+        object = event.GetEventObject()
+        if object.GetId() == 1:
+            self.setScherm('menu')
+        elif object.GetId() == 2:
+            self.setScherm('highscores')
+    
     def onPreGameButton(self, event):
         object = event.GetEventObject()
         if object.GetId() == 1:

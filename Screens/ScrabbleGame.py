@@ -107,6 +107,8 @@ class ScrableGame:
     def isFirstTurn(self):
         return self.firstTurn
 
+    def getPlayerInfo(self):
+        return self.player_info
 
 
 if __name__ == '__main__':
