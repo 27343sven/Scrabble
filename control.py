@@ -173,6 +173,32 @@ class Schermpje2(wx.Frame):
         scherm = self.schermen['woordenVerwijder'][0]
         for button in scherm.buttons:
             button.Bind(wx.EVT_BUTTON, self.onVerwijderButton)
+
+    def endGameEvent(self):
+        # Get current scores and put it in a list
+        self.tempVar = self.game.getPlayerInfo()
+        currentScore = []
+        for i in self.tempVar:
+            currentScore.append([str(i), self.tempVar[i]['score']])
+
+        # Appends list of current scores to existing highscores
+        for i in currentScore:
+            self.HIGHSCORES.append(i)
+
+        # Sort the list of scores from high to low
+        currentScore.sort(key=lambda x: x[1], reverse=True)
+        # Renew highscoreScreen to update scoreboard
+        self.schermen['highscores'] = [highscoreScherm(self, -1, self.HIGHSCORES), (500, 350)]
+        # Rebind buttons
+        self.bindHighscores()
+
+        # Renew resultscreen with current score winner.
+        self.schermen['resultaat'] = [resultaatScherm(self, -1, currentScore[0]), (500, 350)]
+        # Rebind buttons
+        self.bindResultaat()
+        self.setScherm('resultaat')
+        self.game.player_info = {}
+        currentScore = []
     
     def onWisselButton(self, event):
         button = event.GetEventObject()
@@ -185,30 +211,7 @@ class Schermpje2(wx.Frame):
         self.game.nextTurn(overslaan=True)
         self.refreshInfo()
         if self.game.isGameOver():
-            # Get current scores and put it in a list
-            self.tempVar = self.game.getPlayerInfo()
-            currentScore = []
-            for i in self.tempVar:
-                currentScore.append([str(i), self.tempVar[i]['score']])
-
-            # Appends list of current scores to existing highscores
-            for i in currentScore:
-                self.HIGHSCORES.append(i)
-
-            # Sort the list of scores from high to low
-            currentScore.sort(key=lambda x: x[1], reverse=True)
-            # Renew highscoreScreen to update scoreboard
-            self.schermen['highscores'] = [highscoreScherm(self, -1, self.HIGHSCORES), (500, 350)]
-            # Rebind buttons
-            self.bindHighscores()
-
-            # Renew resultscreen with current score winner.
-            self.schermen['resultaat'] = [resultaatScherm(self, -1, currentScore[0]), (500, 350)]
-            # Rebind buttons
-            self.bindResultaat()
-            self.setScherm('resultaat')
-            self.game.player_info = {}
-            currentScore = []
+            self.endGameEvent()
 
     def wisselEvent(self, event):
         letters = self.game.getPlayerLetters()
