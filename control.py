@@ -485,10 +485,21 @@ class Schermpje2(wx.Frame):
         namen = []
         for x in range(int(scherm.playerOption.GetStringSelection())):
             namen.append(scherm.textCtrlDict['textCtrl{}'.format(x + 1)].GetValue())
-        self.game.setPlayers(namen)
-        self.schermen['speelbord'][0].speler.SetLabel(self.game.getCurrentPlayer())
-        self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
-        self.setScherm('speelbord')
+        if "" in namen:
+            dlg = wx.MessageDialog(self, "Names cannot be empty.", "Empty name",
+                                   wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+        elif len(set(namen)) != len(namen):
+            dlg = wx.MessageDialog(self, "All names must be unique.", "Duplicate name",
+                                   wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
+        else:
+            self.game.setPlayers(namen)
+            self.schermen['speelbord'][0].speler.SetLabel(self.game.getCurrentPlayer())
+            self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
+            self.setScherm('speelbord')
 
     def onPreGameOptionsTerugButton(self, event):
         scherm = self.schermen['spelSettings'][0]
