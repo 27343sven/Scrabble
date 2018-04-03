@@ -5,6 +5,7 @@
 *.pyc
 # ignoring idea files
 *.xml
+*.iml
 
 ###########
 # pycharm #
