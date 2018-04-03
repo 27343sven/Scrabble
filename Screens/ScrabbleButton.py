@@ -66,7 +66,10 @@ class GameButton(wx.Button):
             self.woordMultiplier = sw_number
 
     def getWoordMultiplier(self):
-        return(self.woordMultiplier)
+        if not self.tile_used:
+            return(self.woordMultiplier)
+        else:
+            return(1)
 
     def setLetterMultiplier(self, sl_number):
         if type(sl_number) == int:
