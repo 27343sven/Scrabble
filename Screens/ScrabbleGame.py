@@ -11,7 +11,6 @@ class ScrableGame:
                                  "u": 3, "v": 2, "w": 2, "x": 1,
                                  "y": 1, "ij": 2, "z": 2}
         self.letters = self.fillLetters()
-        self.letters = ['a'] * 23
         self.players = []
         self.player_info = {}
         self.current_player = ""

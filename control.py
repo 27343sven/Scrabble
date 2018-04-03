@@ -366,8 +366,7 @@ class Schermpje2(wx.Frame):
                 if not self.woordenboek.woordChecker(woord):
                     all_words_exist = False
                     false_woord = woord
-            # if all_words_exist:
-            if True:
+            if all_words_exist:
                 if self.game.isHandEmpty():
                     score_list.append(["Bonus", 50])
                 self.game.addScore(score_list)
@@ -508,7 +507,6 @@ class Schermpje2(wx.Frame):
         self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
         self.schermen['speelbord'][0].textbox.SetValue("\n".join(self.game.getLog()))
         self.setScherm('speelbord')
-        print("letter count: {}".format(self.game.getLetterCount()))
         if len(self.game.getPlayerLetters()) < 7:
             self.schermen['speelbord'][0].wisselButton.SetLabel("Beurt overslaan")
             self.schermen['speelbord'][0].wisselButton.SetBackgroundColour(wx.RED)
