@@ -3,6 +3,9 @@
 ##########
 # ignoring the compliled files
 *.pyc
+# ignoring idea files
+*.xml
+*.iml
 
 ###########
 # pycharm #

@@ -10,6 +10,7 @@ class Hand(wx.BoxSizer):
         self.changeHand(['l', 'e', 't', 't', 'e', 'r', 's'])
 
     def changeHand(self, letters):
+        self.clearHand()
         self.fillHand(size=len(letters))
         self.letters = letters
         for i in range(len(self.letters)):
@@ -20,6 +21,12 @@ class Hand(wx.BoxSizer):
             self.Add(GameButton(self.window, 1, (0, 0)), 1, wx.CENTER)
         self.Layout()
 
+    def clearHand(self):
+        while len(self.GetChildren()) > 1:
+            self.letters.pop(0)
+            self.Hide(0)
+            self.Remove(0)
+        self.Layout()
 
     def removeLetter(self, letter):
         index = self.letters.index(letter)

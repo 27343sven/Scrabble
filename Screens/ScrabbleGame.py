@@ -19,6 +19,7 @@ class ScrableGame:
         self.default_letters = default_letters
         self.log = []
         self.firstTurn = True
+        self.speleind = 0
 
     def fillLetters(self):
         letters = []
@@ -57,6 +58,8 @@ class ScrableGame:
                 # als er geen letters meer over zijn
                 break
 
+    def getLetterCount(self):
+        return len(self.letters)
 
     def popLetter(self):
         if self.letters:
@@ -71,9 +74,13 @@ class ScrableGame:
         self.current_player = self.players[0]
         self.current_beurt = 1
 
-    def nextTurn(self, inwissel=False):
+    def nextTurn(self, inwissel=False, overslaan=False):
         if self.firstTurn and not inwissel:
             self.firstTurn = False
+        if overslaan:
+            self.speleind += 1
+        else:
+            self.speleind = 0
         index = self.players.index(self.current_player)
         self.refillPlayerLetters()
         if index + 1 >= len(self.players):
@@ -82,6 +89,12 @@ class ScrableGame:
         else:
             self.current_player = self.players[index + 1]
         self.letters_gespeeld = 0
+
+    def isGameOver(self):
+        if self.speleind > len(self.players) - 1:
+            return True
+        else:
+            False
 
     def getCurrentBeurt(self):
         return self.current_beurt

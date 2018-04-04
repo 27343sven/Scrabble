@@ -173,8 +173,47 @@ class Schermpje2(wx.Frame):
         scherm = self.schermen['woordenVerwijder'][0]
         for button in scherm.buttons:
             button.Bind(wx.EVT_BUTTON, self.onVerwijderButton)
+
+    def endGameEvent(self):
+        # Get current scores and put it in a list
+        self.tempVar = self.game.getPlayerInfo()
+        currentScore = []
+        for i in self.tempVar:
+            currentScore.append([str(i), self.tempVar[i]['score']])
+
+        # Appends list of current scores to existing highscores
+        for i in currentScore:
+            self.HIGHSCORES.append(i)
+
+        # Sort the list of scores from high to low
+        currentScore.sort(key=lambda x: x[1], reverse=True)
+        # Renew highscoreScreen to update scoreboard
+        self.schermen['highscores'] = [highscoreScherm(self, -1, self.HIGHSCORES), (500, 350)]
+        # Rebind buttons
+        self.bindHighscores()
+
+        # Renew resultscreen with current score winner.
+        self.schermen['resultaat'] = [resultaatScherm(self, -1, currentScore[0]), (500, 350)]
+        # Rebind buttons
+        self.bindResultaat()
+        self.setScherm('resultaat')
+        self.game.player_info = {}
+        currentScore = []
     
     def onWisselButton(self, event):
+        button = event.GetEventObject()
+        if button.GetLabel() == "wissel in":
+            self.wisselEvent(event)
+        else:
+            self.beurtOverslaanEvent(event)
+
+    def beurtOverslaanEvent(self, event):
+        self.game.nextTurn(overslaan=True)
+        self.refreshInfo()
+        if self.game.isGameOver():
+            self.endGameEvent()
+
+    def wisselEvent(self, event):
         letters = self.game.getPlayerLetters()
         self.onClearButton(event)
         test = InwisselPopup(letters, icon_path="./Media/")
@@ -187,6 +226,7 @@ class Schermpje2(wx.Frame):
         else:
             pass
         test.Destroy()
+
 
     def onNextTurnButton(self, event):
         if self.game.letters_gespeeld == 0:
@@ -470,8 +510,9 @@ class Schermpje2(wx.Frame):
         self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
         self.schermen['speelbord'][0].textbox.SetValue("\n".join(self.game.getLog()))
         self.setScherm('speelbord')
-        if self.game.isLettersEmpty():
+        if len(self.game.getPlayerLetters()) < 7:
             self.schermen['speelbord'][0].wisselButton.SetLabel("Beurt overslaan")
+            self.schermen['speelbord'][0].wisselButton.SetBackgroundColour(wx.RED)
 
     def onClearButton(self, event):
         for row in self.schermen['speelbord'][0].button_grid:
