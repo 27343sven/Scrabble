@@ -21,6 +21,10 @@ class ScrableGame:
         self.firstTurn = True
         self.speleind = 0
 
+    def setTestModus(self):
+        self.letters = list("testmoduslettershierinvoeren")
+        self.letters.reverse()
+
     def fillLetters(self):
         letters = []
         for letter in self.standard_letters:
