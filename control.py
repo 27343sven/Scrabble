@@ -605,6 +605,8 @@ class Schermpje2(wx.Frame):
                     self.clearLetter(letter)
 
     def onPreGameOptionsSpelenButton(self, event):
+        if self.schermen['settings'][0].testmodeCheck.GetValue():
+            self.game.setTestModus()
         scherm = self.schermen['spelSettings'][0]
         namen = []
         for x in range(int(scherm.playerOption.GetStringSelection())):
