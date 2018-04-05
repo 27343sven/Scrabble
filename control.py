@@ -11,6 +11,8 @@ from Screens.SchermResultaat import Schermpje as resultaatScherm
 # popups
 from Screens.PopupLetterScanner import Picker
 from Screens.LetterInwisselScanner import Picker as InwisselPopup
+from Screens.PopupWoordenToevoeg import Picker as ToevoegPopup
+from Screens.PopupWoordenVerwijder import Picker as VerwijderPopup
 
 # classes
 from Screens.ScrabbleGame import ScrableGame
@@ -19,8 +21,10 @@ from Screens.WordCheck import WordCheck
 import wx
 import csv
 
+
 class Schermpje2(wx.Frame):
     HIGHSCORES = []
+
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, id, title, size=(1200, 600))
         self.schermen = {}
@@ -51,7 +55,7 @@ class Schermpje2(wx.Frame):
                 self.schermen[x][0].Hide()  ##Hide alle andere schermen.
             else:
                 self.schermen[x][0].Show()  ##Showt huidige scherm
-                self.Layout()               ##Refresh windows anders wordt het heel raar.
+                self.Layout()  ##Refresh windows anders wordt het heel raar.
         self.Centre()
         self.Show(True)
 
@@ -60,8 +64,6 @@ class Schermpje2(wx.Frame):
         self.bindHighscores()
         self.bindPreGame()
         self.bindSettings()
-        self.bindToevoeg()
-        self.bindVerwijder()
         self.bindSpeelScherm()
         self.bindPreGameOptions()
 
@@ -73,18 +75,17 @@ class Schermpje2(wx.Frame):
         self.schermen['speelbord'][0].nextTurnButton.Bind(wx.EVT_BUTTON, self.onNextTurnButton)
         self.schermen['speelbord'][0].wisselButton.Bind(wx.EVT_BUTTON, self.onWisselButton)
 
-        #Test button
+        # Test button
         self.schermen['speelbord'][0].endButton.Bind(wx.EVT_BUTTON, self.onEndButton)
 
-
-    #Test button
+    # Test button
     def onEndButton(self, event):
         # Get current scores and put it in a list
         self.tempVar = self.game.getPlayerInfo()
         currentScore = []
         for i in self.tempVar:
             currentScore.append([str(i), self.tempVar[i]['score']])
-        
+
         # Appends list of current scores to existing highscores
         for i in currentScore:
             self.HIGHSCORES.append(i)
@@ -134,11 +135,11 @@ class Schermpje2(wx.Frame):
         self.game.letters_gespeeld -= 1
         self.schermen['speelbord'][0].beurtLetters.SetLabel(str(self.game.letters_gespeeld))
 
-    def bindResultaat(self): 
+    def bindResultaat(self):
         scherm = self.schermen['resultaat'][0]
         scherm.backButton.Bind(wx.EVT_BUTTON, self.onResultaatButton)
         scherm.scoreBoardButton.Bind(wx.EVT_BUTTON, self.onResultaatButton)
-        
+
     def bindPreGameOptions(self):
         scherm = self.schermen['spelSettings'][0]
         scherm.spelenButton.Bind(wx.EVT_BUTTON, self.onPreGameOptionsSpelenButton)
@@ -161,8 +162,11 @@ class Schermpje2(wx.Frame):
 
     def bindSettings(self):
         scherm = self.schermen['settings'][0]
+        self.schermen['settings'][0].woordToevoegButton.Bind(wx.EVT_BUTTON, self.popupToevoegen)
+        self.schermen['settings'][0].woordVerwijderButton.Bind(wx.EVT_BUTTON, self.popupVerwijder)
         for button in scherm.buttons:
-            button.Bind(wx.EVT_BUTTON, self.onSettingsButton)
+            if button.GetId() == 1:
+                button.Bind(wx.EVT_BUTTON, self.onSettingsMenuButton)
 
     def bindToevoeg(self):
         scherm = self.schermen['woordenToevoeg'][0]
@@ -199,7 +203,7 @@ class Schermpje2(wx.Frame):
         self.setScherm('resultaat')
         self.game.player_info = {}
         currentScore = []
-    
+
     def onWisselButton(self, event):
         button = event.GetEventObject()
         if button.GetLabel() == "wissel in":
@@ -212,6 +216,17 @@ class Schermpje2(wx.Frame):
         self.refreshInfo()
         if self.game.isGameOver():
             self.endGameEvent()
+            self.game = ScrableGame()
+            self.resetBoard()
+
+    def resetBoard(self):
+        self.schermen['speelbord'][0].score.SetLabel("0")
+        self.schermen['speelbord'][0].wisselButton.SetLabel("wissel in")
+        self.schermen['speelbord'][0].wisselButton.SetBackgroundColour(wx.NullColour)
+        self.schermen['speelbord'][0].textbox.SetValue("")
+        for row in self.schermen['speelbord'][0].button_grid:
+            for button in row:
+                button.resetButton()
 
     def wisselEvent(self, event):
         letters = self.game.getPlayerLetters()
@@ -227,19 +242,69 @@ class Schermpje2(wx.Frame):
             pass
         test.Destroy()
 
+    def popupToevoegen(self, event):
+        self.Popup = ToevoegPopup(title="Woord Toevoegen")
+        self.Popup.toevoegButton.Bind(wx.EVT_BUTTON, self.onPopupButton)
+        self.Popup.ShowModal()
+        self.Popup.Destroy()
+
+    def onPopupButton(self, event):
+        waarde = self.Popup.textBox.GetValue()
+        if self.Toevoegen(waarde):
+            self.Popup.EndModal(wx.ID_OK)
+
+    def Toevoegen(self, waarde):
+        if self.woordenboek.woordChecker(waarde):
+            self.Popup.text.SetLabel("Dit woord staat al in de lijst.")
+            self.Popup.text.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT,
+                                            wx.FONTSTYLE_NORMAL,
+                                            wx.FONTWEIGHT_NORMAL))
+            return False
+        else:
+            if self.woordenboek.woordToevoegen(waarde) == "OK":
+                return True
+            else:
+                return False
+
+    def popupVerwijder(self, event):
+        self.Popup2 = VerwijderPopup(title="Woord Verwijderen")
+        self.Popup2.verwijderButton.Bind(wx.EVT_BUTTON, self.onPopupButton2)
+        self.Popup2.ShowModal()
+        self.Popup2.Destroy()
+
+    def onPopupButton2(self, event):
+        waarde = self.Popup2.textBox.GetValue()
+        if self.Verwijderen(waarde):
+            self.Popup2.EndModal(wx.ID_OK)
+
+    def Verwijderen(self, waarde):
+        if not self.woordenboek.woordChecker(waarde):
+            self.Popup2.text.SetLabel("Dit woord komt niet voor in de lijst.")
+            self.Popup2.text.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT,
+                                            wx.FONTSTYLE_NORMAL,
+                                            wx.FONTWEIGHT_NORMAL))
+            return False
+        else:
+            if self.woordenboek.woordVerwijderen(waarde) == "OK":
+                return True
+            else:
+                return False
+
 
     def onNextTurnButton(self, event):
         if self.game.letters_gespeeld == 0:
-            dlg = wx.MessageDialog(self, "Please place a word before going to the next turn. If you cannot place a word you can exchange your letters.", "No Letters Played",
+            dlg = wx.MessageDialog(self,
+                                   "Please place a word before going to the next turn. If you cannot place a word you can exchange your letters.",
+                                   "No Letters Played",
                                    wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
             dlg.Destroy()
             return
         if not self.checkIfNewLettersInLine():
             dlg = wx.MessageDialog(self,
-                                    "All letters must be placed in one line.",
-                                    "Letters not in line",
-                                    wx.OK | wx.ICON_WARNING)
+                                   "All letters must be placed in one line.",
+                                   "Letters not in line",
+                                   wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -258,8 +323,10 @@ class Schermpje2(wx.Frame):
                     lone_letter_count, horizontal_check, vertical_check, lone_letter_woorden = 0, False, False, []
                     if not x > 13 and self.getNextTileLetter((x, y), True) != "":
                         horizontal_check = True
-                        tb_status, tb_woord, tb_score, word_pos, letters_in_woord, pos_lone_letter_pos = self.checkForWoord((x, y), True)
-                        print("({:2}, {:2}) hor: {}; status = {:10}, woord = '{}'".format(x, y, True, tb_status, tb_woord))
+                        tb_status, tb_woord, tb_score, word_pos, letters_in_woord, pos_lone_letter_pos = self.checkForWoord(
+                            (x, y), True)
+                        print("({:2}, {:2}) hor: {}; status = {:10}, woord = '{}'".format(x, y, True, tb_status,
+                                                                                          tb_woord))
                         if tb_status == "loneLetter":
                             if self.game.getAantalLettersGespeeld() != 1:
                                 lone_letter_count += 1
@@ -286,8 +353,10 @@ class Schermpje2(wx.Frame):
 
                     if not y > 13 and self.getNextTileLetter((x, y), False) != "":
                         vertical_check = True
-                        tb_status, tb_woord, tb_score, word_pos, letters_in_woord, pos_lone_letter_pos = self.checkForWoord((x, y), False)
-                        print("({:2}, {:2}) hor: {}; status = {:10}, woord = '{}'".format(x, y, False, tb_status, tb_woord))
+                        tb_status, tb_woord, tb_score, word_pos, letters_in_woord, pos_lone_letter_pos = self.checkForWoord(
+                            (x, y), False)
+                        print("({:2}, {:2}) hor: {}; status = {:10}, woord = '{}'".format(x, y, False, tb_status,
+                                                                                          tb_woord))
                         if tb_status == "loneLetter":
                             if self.game.getAantalLettersGespeeld() != 1:
                                 lone_letter_count += 1
@@ -313,11 +382,16 @@ class Schermpje2(wx.Frame):
                                 position_list.append(word_pos)
                     if horizontal_check and vertical_check:
                         if lone_letter_count > 0:
-                            print("possible lone letter added on ({}, {}) checks = ({}, {})".format(lone_letter_pos[0], lone_letter_pos[1], horizontal_check, vertical_check))
+                            print("possible lone letter added on ({}, {}) checks = ({}, {})".format(lone_letter_pos[0],
+                                                                                                    lone_letter_pos[1],
+                                                                                                    horizontal_check,
+                                                                                                    vertical_check))
                             possible_lone_letters[lone_letter_pos] = lone_letter_woorden
                     elif (horizontal_check or vertical_check) and lone_letter_count > 0:
-                        print("possible lone letter added on ({}, {}) checks = ({}, {})".format(lone_letter_pos[0], lone_letter_pos[0], horizontal_check,
-                                                                                       vertical_check))
+                        print("possible lone letter added on ({}, {}) checks = ({}, {})".format(lone_letter_pos[0],
+                                                                                                lone_letter_pos[0],
+                                                                                                horizontal_check,
+                                                                                                vertical_check))
                         possible_lone_letters[lone_letter_pos] = lone_letter_woorden
                     elif lone_letter_woorden:
                         for (woord, score) in lone_letter_woorden:
@@ -332,7 +406,6 @@ class Schermpje2(wx.Frame):
             else:
                 for (woord, score) in possible_lone_letters[lone_letter_position]:
                     score_list.append([woord, score])
-
 
         print(statusList.count("loneLetter"))
         if "loneLetter" in statusList:
@@ -359,7 +432,8 @@ class Schermpje2(wx.Frame):
             return
         if "notInMiddle" in statusList:
             # als de letters niet in het midden liggen tijdens de eerste beurt
-            dlg = wx.MessageDialog(self, "Must place first word in middle.", "Word not in middle", wx.OK | wx.ICON_WARNING)
+            dlg = wx.MessageDialog(self, "Must place first word in middle.", "Word not in middle",
+                                   wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -382,7 +456,6 @@ class Schermpje2(wx.Frame):
                 dlg.ShowModal()
                 dlg.Destroy()
                 return
-
 
     def lockLetters(self):
         for y in range(len(self.schermen['speelbord'][0].button_grid)):
@@ -416,7 +489,6 @@ class Schermpje2(wx.Frame):
                     if not isConnected:
                         return True
         return False
-
 
     def getNextTileLetter(self, pos, horizontal):
         x, y = pos[0], pos[1]
@@ -458,7 +530,8 @@ class Schermpje2(wx.Frame):
                     print("{}|{}|{}".format(x, y, letter))
 
     def findWoord(self, pos, horizontal):
-        woord, new, new_letters, woordMulti, woord_score, x, y, middle, connected = "", False, 0, 1, 0, pos[0], pos[1], False, False
+        woord, new, new_letters, woordMulti, woord_score, x, y, middle, connected = "", False, 0, 1, 0, pos[0], pos[
+            1], False, False
         letters_in_woord = []
         new_letter_positions = []
         while True:
@@ -490,16 +563,21 @@ class Schermpje2(wx.Frame):
         return new, new_letters, woord, woordMulti, woord_score, middle, connected, letters_in_woord, new_letter_positions
 
     def checkForWoord(self, pos, horizontal):
-        if self.getPreviousTileLetter(pos, horizontal) == "" or (horizontal and pos[0] == 0) or (not horizontal and pos[1] == 0):
-            new, new_letters, woord, woordMulti, woord_score, middle, connected, letters_in_woord, new_letter_positions = self.findWoord(pos, horizontal)
+        if self.getPreviousTileLetter(pos, horizontal) == "" or (horizontal and pos[0] == 0) or (
+                not horizontal and pos[1] == 0):
+            new, new_letters, woord, woordMulti, woord_score, middle, connected, letters_in_woord, new_letter_positions = self.findWoord(
+                pos, horizontal)
             score = woord_score * woordMulti
             if new:
                 if self.game.isFirstTurn() and not middle:
-                    return "notInMiddle", woord, 0, (horizontal, pos[1] if horizontal else pos[0]), letters_in_woord, (-1, -1)
+                    return "notInMiddle", woord, 0, (horizontal, pos[1] if horizontal else pos[0]), letters_in_woord, (
+                    -1, -1)
                 if not self.game.isFirstTurn() and not connected:
-                    return "notConnected", woord, 0, (horizontal, pos[1] if horizontal else pos[0]), letters_in_woord, (-1, -1)
+                    return "notConnected", woord, 0, (horizontal, pos[1] if horizontal else pos[0]), letters_in_woord, (
+                    -1, -1)
                 if new_letters == 1:
-                    return "loneLetter", woord, score, (horizontal, pos[1] if horizontal else pos[0]), letters_in_woord, new_letter_positions[0]
+                    return "loneLetter", woord, score, (horizontal, pos[1] if horizontal else pos[0]), letters_in_woord, \
+                           new_letter_positions[0]
                 return "ok", woord, score, (horizontal, pos[1] if horizontal else pos[0]), letters_in_woord, (-1, -1)
         return "notNew", "Error", 0, (horizontal, pos[1] if horizontal else pos[0]), [], (-1, -1)
 
@@ -541,6 +619,8 @@ class Schermpje2(wx.Frame):
             self.schermen['speelbord'][0].speler.SetLabel(self.game.getCurrentPlayer())
             self.schermen['speelbord'][0].hand.changeHand(self.game.getPlayerLetters())
             self.setScherm('speelbord')
+            self.schermen['spelSettings'][0] = spelSettingScherm(self, -1)
+            self.bindPreGameOptions()
 
     def onPreGameOptionsTerugButton(self, event):
         scherm = self.schermen['spelSettings'][0]
@@ -584,7 +664,7 @@ class Schermpje2(wx.Frame):
             self.setScherm('menu')
         elif object.GetId() == 2:
             self.setScherm('highscores')
-    
+
     def onPreGameButton(self, event):
         object = event.GetEventObject()
         if object.GetId() == 1:
@@ -592,14 +672,8 @@ class Schermpje2(wx.Frame):
         elif object.GetId() == 2:
             self.setScherm('speelbord')
 
-    def onSettingsButton(self, event):
-        object = event.GetEventObject()
-        if object.GetId() == 1:
-            self.setScherm('menu')
-        elif object.GetId() == 2:
-            self.setScherm('woordenToevoeg')
-        elif object.GetId() == 3:
-            self.setScherm('woordenVerwijder')
+    def onSettingsMenuButton(self, event):
+        self.setScherm('menu')
 
     def onToevoegButton(self, event):
         object = event.GetEventObject()
@@ -607,13 +681,13 @@ class Schermpje2(wx.Frame):
             self.setScherm('settings')
         if object.GetId() == 2:
             print("Toevoeg woord: " +
-                self.schermen['woordenToevoeg'][0].textBox.GetValue().lower())
+                  self.schermen['woordenToevoeg'][0].textBox.GetValue().lower())
 
     def onVerwijderButton(self, event):
         object = event.GetEventObject()
         if object.GetId() == 1:
             self.setScherm('settings')
-        if object.GetId() == 2:    
+        if object.GetId() == 2:
             print("Verwijder woord: " +
                   self.schermen['woordenVerwijder'][0].textBox.GetValue().lower())
 

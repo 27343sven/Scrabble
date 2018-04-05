@@ -44,11 +44,6 @@ class WordCheck:
             file.close()
             return "OK"
 
-
-
-
-
-
 if __name__ == '__main__':
     Woord = WordCheck()
     print(Woord.woordVerwijderen("aag"))

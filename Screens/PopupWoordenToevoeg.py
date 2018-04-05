@@ -8,10 +8,10 @@ class Picker(wx.Dialog):
     def __init__(self, title='myFrame'):
         wx.Dialog.__init__(self, None, -1, title=title, size=(300, 158))
         boxje = wx.BoxSizer(wx.VERTICAL)
-        text = wx.StaticText(self, -1, "Woord toevoegen")
-        text.SetFont(wx.Font(20, wx.ROMAN, wx.NORMAL, wx.NORMAL))
+        self.text = wx.StaticText(self, -1, "Woord toevoegen")
+        self.text.SetFont(wx.Font(20, wx.ROMAN, wx.NORMAL, wx.NORMAL))
         self.textBox = wx.TextCtrl(self, -1)
-        boxje.Add(text, 0, wx.CENTER)
+        boxje.Add(self.text, 0, wx.CENTER)
         boxje.AddSpacer(30)
         boxje.Add(self.textBox, 0, wx.CENTER)
         boxje.AddSpacer(40)
