@@ -245,8 +245,12 @@ class Schermpje2(wx.Frame):
     def popupToevoegen(self, event):
         self.Popup = ToevoegPopup(title="Woord Toevoegen")
         self.Popup.toevoegButton.Bind(wx.EVT_BUTTON, self.onPopupButton)
+        self.Popup.terugButton.Bind(wx.EVT_BUTTON, self.onWoordPopupTerugButton)
         self.Popup.ShowModal()
         self.Popup.Destroy()
+
+    def onWoordPopupTerugButton(self, event):
+        self.Popup.EndModal(wx.ID_OK)
 
     def onPopupButton(self, event):
         waarde = self.Popup.textBox.GetValue()
@@ -267,20 +271,21 @@ class Schermpje2(wx.Frame):
                 return False
 
     def popupVerwijder(self, event):
-        self.Popup2 = VerwijderPopup(title="Woord Verwijderen")
-        self.Popup2.verwijderButton.Bind(wx.EVT_BUTTON, self.onPopupButton2)
-        self.Popup2.ShowModal()
-        self.Popup2.Destroy()
+        self.Popup = VerwijderPopup(title="Woord Verwijderen")
+        self.Popup.verwijderButton.Bind(wx.EVT_BUTTON, self.onPopupButton2)
+        self.Popup.terugButton.Bind(wx.EVT_BUTTON, self.onWoordPopupTerugButton)
+        self.Popup.ShowModal()
+        self.Popup.Destroy()
 
     def onPopupButton2(self, event):
-        waarde = self.Popup2.textBox.GetValue()
+        waarde = self.Popup.textBox.GetValue()
         if self.Verwijderen(waarde):
-            self.Popup2.EndModal(wx.ID_OK)
+            self.Popup.EndModal(wx.ID_OK)
 
     def Verwijderen(self, waarde):
         if not self.woordenboek.woordChecker(waarde):
-            self.Popup2.text.SetLabel("Dit woord komt niet voor in de lijst.")
-            self.Popup2.text.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT,
+            self.Popup.text.SetLabel("Dit woord komt niet voor in de lijst.")
+            self.Popup.text.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT,
                                             wx.FONTSTYLE_NORMAL,
                                             wx.FONTWEIGHT_NORMAL))
             return False
